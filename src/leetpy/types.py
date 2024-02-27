@@ -39,3 +39,21 @@ class Node_DLL:
         self.prev = prev
         self.next = next
         self.child = child
+
+
+# References:
+# https://leetcode.com/problems/binary-tree-inorder-traversal/
+class TreeNode:
+    """
+    Used in binary trees.
+    """
+
+    def __init__(
+        self,
+        val: any = 0,
+        left: Optional["TreeNode"] = None,
+        right: Optional["TreeNode"] = None,
+    ):
+        self.val = val
+        self.left = left
+        self.right = right
