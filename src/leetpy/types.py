@@ -30,7 +30,7 @@ class ListNode:
 # https://leetcode.com/problems/flatten-a-multilevel-doubly-linked-list/
 class Node_DLL:
     """
-    Used in doubly-linked lists
+    Used in doubly-linked lists.
     NOTE: Leetcode refers to this as "Node"
     """
 
