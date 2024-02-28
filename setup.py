@@ -28,7 +28,7 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Operating System :: OS Independent",
     ],
-    install_requires=[],
+    install_requires=["rich==13.7.1"],
     python_requires=">=3.8",
     keywords=[],
     project_urls={
