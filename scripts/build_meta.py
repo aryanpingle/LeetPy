@@ -1,5 +1,5 @@
 """
-Dynamically builds the info/meta.json file
+Dynamically builds the meta.json file
 """
 
 import json
@@ -17,7 +17,9 @@ class MetaData(TypedDict):
 if __name__ == "__main__":
     meta: MetaData = {}
 
-    with open("info/per-question-metadata.json", "r") as f:
+    info_folder = "leetpy/info"
+
+    with open(f"{info_folder}/per-question-metadata.json", "r") as f:
         qn_metadata_list: List[dict] = json.load(f)
 
     meta["question_count"] = len(qn_metadata_list)
@@ -25,7 +27,7 @@ if __name__ == "__main__":
     topics = set()
     for qn_metadata in qn_metadata_list:
         topics.update(qn_metadata["topics"])
-    meta["topics"] = list(topics)
+    meta["topics"] = list(sorted(topics))
 
     difficulty_count = defaultdict(int)
     for qn_metadata in qn_metadata_list:
@@ -39,5 +41,5 @@ if __name__ == "__main__":
     meta["paid_count"] = paid_count
 
     # Save the metadata
-    with open("info/meta.json", "w") as f:
-        json.dump(meta, f, indent=2)
+    with open(f"{info_folder}/meta.json", "w") as f:
+        json.dump(meta, f, indent=None, separators=(",", ":"))
