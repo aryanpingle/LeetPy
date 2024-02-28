@@ -29,9 +29,6 @@ setup(
         "Operating System :: OS Independent",
     ],
     install_requires=[],
-    extras_require={
-        "dev": ["twine>=4.0.2"],
-    },
     python_requires=">=3.8",
     keywords=[],
     project_urls={
