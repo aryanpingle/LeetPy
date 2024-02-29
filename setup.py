@@ -1,12 +1,24 @@
 import os
 import shutil
 from setuptools import find_packages, setup
+from packaging.version import Version
+from rich import print as rich_print
 
 with open("README.md", "r") as f:
     long_description = f.read()
 
 with open("version.txt", "r") as f:
     version = f.read()
+
+version = "0.1.dev1"
+
+# Validate the version name
+try:
+    v = Version(version)
+    rich_print(f"[bold cyan]{version}[/] [bold green]is a valid version name[/]")
+except:
+    rich_print(f"[bold cyan]{version}[/] [bold red]is not a valid version name[/]")
+    exit(1)
 
 # Delete directory 'leetpy.egg-info'
 egg_dir = "leetpy.egg-info"
