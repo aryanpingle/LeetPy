@@ -160,7 +160,6 @@ if __name__ == "__main__":
         "-n",
         "--limit-results",
         action="store",
-        default=10_000,
         help="Limit the number of results",
         type=int,
     )
@@ -205,6 +204,9 @@ if __name__ == "__main__":
 
     # Search with the given params
     if args.search or args.topics or args.difficulties or args.limit_results:
+        # Set default value of args.limit_results
+        if args.limit_results == None:
+            args.limit_results = 10_000
         # Clean up topics
         if args.topics:
             args.topics = [
