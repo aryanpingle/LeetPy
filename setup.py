@@ -32,10 +32,10 @@ setup(
     python_requires=">=3.8",
     keywords=[],
     project_urls={
-        "homepage": "https://github.com/aryanpingle/LeetPy",
-        "source": "https://github.com/aryanpingle/LeetPy",
-        "download": "https://pypi.org/project/leetpy/#files",
-        "tracker": "https://github.com/aryanpingle/LeetPy/issues",
+        "Homepage": "https://github.com/aryanpingle/LeetPy",
+        "Source": "https://github.com/aryanpingle/LeetPy",
+        "Download": "https://pypi.org/project/leetpy/#files",
+        "Tracker": "https://github.com/aryanpingle/LeetPy/issues",
     },
     package_data={"leetpy": ["info/*"]},
 )
