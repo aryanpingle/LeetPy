@@ -7,6 +7,7 @@ from collections import defaultdict
 from typing import TypedDict, List, Dict
 
 
+# Mirrored in leetpy/__main__.py
 class MetaData(TypedDict):
     question_count: int
     topics: List[str]

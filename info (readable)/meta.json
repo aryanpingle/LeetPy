@@ -74,9 +74,9 @@
     "Union Find"
   ],
   "difficulty_count": {
-    "Easy": 775,
-    "Medium": 1606,
-    "Hard": 679
+    "easy": 775,
+    "medium": 1606,
+    "hard": 679
   },
   "paid_count": 618
 }
