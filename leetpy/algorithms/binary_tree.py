@@ -13,12 +13,20 @@ def count_nodes(root: Optional[TreeNode]) -> int:
 
 
 def get_depth(root: Optional[TreeNode]) -> int:
+    """
+    Returns the maximum depth/height of the given Binary Tree.
+    For a single root node, the depth is 1.
+    """
     if root == None:
         return 0
     return 1 + max(get_depth(root.left), get_depth(root.right))
 
 
 def is_binary_search_tree(root: Optional[TreeNode]) -> bool:
+    """
+    Checks if the given Binary Tree satisfies the properties of a Binary Search Tree
+    """
+
     def util(root, min_val, max_val) -> bool:
         if root == None:
             return True
@@ -29,3 +37,22 @@ def is_binary_search_tree(root: Optional[TreeNode]) -> bool:
         )
 
     return util(root, -float("inf"), float("inf"))
+
+
+def count_leaf_nodes(root: Optional[TreeNode]) -> int:
+    """
+    Returns the number of leaf nodes in the given Binary Tree
+    """
+    count = [0]
+
+    def util(root):
+        if root == None:
+            return
+        if root.left or root.right:
+            util(root.left)
+            util(root.right)
+        else:
+            count[0] += 1
+
+    util(root)
+    return count[0]
