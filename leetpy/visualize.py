@@ -4,19 +4,24 @@ Utility functions that let you debug data structures by printing them to the scr
 Binary Tree Inspiration: https://github.com/miguelmota/ascii-binary-tree
 """
 
+from rich import print as rich_print
 from typing import Optional, Dict
 
 from .types import TreeNode
 from .algorithms import binary_tree as BTAlgos
 
+
 # TODO: Code looks kinda ugly, needs more refactoring
 def print_binary_tree(
     root: Optional[TreeNode],
-    spacing: int = 1,
     box_color: str = "magenta",
     line_color: str = "white",
 ):
-    MIN_NODE_GAP = spacing
+    """
+    Prints the rooted binary tree in a visually appealing format
+    """
+
+    MIN_NODE_GAP = 3
 
     contours: Dict[TreeNode, dict] = {}
 
@@ -146,5 +151,4 @@ def print_binary_tree(
 
     recursive_draw(root, -leftmost, 0)
 
-    from rich import print as rich_print
     rich_print("\n".join("".join(row) for row in grid))
