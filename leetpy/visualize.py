@@ -4,14 +4,13 @@ Utility functions that let you debug data structures by printing them to the scr
 Binary Tree Inspiration: https://github.com/miguelmota/ascii-binary-tree
 """
 
-from rich import print as rich_print
 from typing import Optional, Dict
+from rich import print as rich_print
 
 from .types import TreeNode
 from .algorithms import binary_tree as BTAlgos
 
 
-# TODO: Code looks kinda ugly, needs more refactoring
 def print_binary_tree(
     root: Optional[TreeNode],
     box_color: str = "magenta",
@@ -26,7 +25,7 @@ def print_binary_tree(
     contours: Dict[TreeNode, dict] = {}
 
     def get_contour(root: Optional[TreeNode]) -> Optional[dict]:
-        if root == None:
+        if root is None:
             return None
 
         # No children
@@ -78,10 +77,6 @@ def print_binary_tree(
 
         dist_between_children = max_hor_intersection + MIN_NODE_GAP
 
-        # print(
-        #     f"[{root.val}] dist between '{root.left and root.left.val}' & '{root.right and root.right.val}' = {dist_between_children}"
-        # )
-
         offset_distance = 1 + dist_between_children // 2
 
         # Create the merged contour
@@ -122,7 +117,7 @@ def print_binary_tree(
         return f"[{line_color}]{s}[/]"
 
     def recursive_draw(root: Optional[TreeNode], x: int, depth: int):
-        if root == None:
+        if root is None:
             return
 
         grid[2 * depth][x] = f"[on {box_color}]  [/]"
@@ -146,7 +141,7 @@ def print_binary_tree(
             right_child_x = x + offset_right
             for i in range(x + 1, right_child_x):
                 grid[2 * depth][i] = line_format("__")
-            grid[2 * depth + 1][right_child_x] = line_format("\ ")
+            grid[2 * depth + 1][right_child_x] = line_format("\\ ")
             recursive_draw(root.right, x + offset_right, depth + 1)
 
     recursive_draw(root, -leftmost, 0)
