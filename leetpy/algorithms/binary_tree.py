@@ -3,7 +3,7 @@ Algorithms and utility functions relating to Binary Trees
 """
 
 from typing import Optional, List, Dict
-from leetpy.types import TreeNode
+from ..types import TreeNode
 
 
 def count_nodes(root: Optional[TreeNode]) -> int:
