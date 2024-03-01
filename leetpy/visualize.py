@@ -4,66 +4,147 @@ Utility functions that let you debug data structures by printing them to the scr
 Binary Tree Inspiration: https://github.com/miguelmota/ascii-binary-tree
 """
 
-from rich import print as rich_print
-from typing import Optional
+from typing import Optional, Dict
 
 from .types import TreeNode
 from .algorithms import binary_tree as BTAlgos
 
+# TODO: Code looks kinda ugly, needs more refactoring
+def print_binary_tree(
+    root: Optional[TreeNode],
+    spacing: int = 1,
+    box_color: str = "magenta",
+    line_color: str = "white",
+):
+    MIN_NODE_GAP = spacing
 
-# TODO: Needs MAJOR refactoring
-# TODO: Not quite there yet. Need to research Layered Drawings more.
-def print_binary_tree(root: Optional[TreeNode], key=lambda x: x.val):
+    contours: Dict[TreeNode, dict] = {}
+
+    def get_contour(root: Optional[TreeNode]) -> Optional[dict]:
+        if root == None:
+            return None
+
+        # No children
+        if (not root.left) and (not root.right):
+            return {0: (0, 0)}
+
+        # Only one child
+        if (not root.left) or (not root.right):
+            direction = 1 if root.right else -1
+            contour_child = get_contour(root.left or root.right)
+
+            level_count = len(contour_child)
+
+            dist_between_children = MIN_NODE_GAP
+
+            offset_distance = 1 + dist_between_children // 2
+
+            contour = {0: (0, 0)}
+            for level in range(level_count):
+                leftmost = contour_child[level][0] + (direction * offset_distance)
+                rightmost = contour_child[level][1] + (direction * offset_distance)
+                contour[level + 1] = (leftmost, rightmost)
+
+            contours[root] = contour
+            return contour
+
+        # confirmed: both children alive and kicking
+
+        contour_left = get_contour(root.left)
+        contour_right = get_contour(root.right)
+
+        level_count = max(len(contour_left), len(contour_right))
+
+        # The distance between roots needed so the two contours just touch each other
+        max_hor_intersection = 0
+
+        # Find the distance to keep them separated at
+        for level in range(level_count):
+            # One of the contours does not have this level
+            # There won't be any possible intersections
+            if (level not in contour_left) or (level not in contour_right):
+                break
+
+            # if both have this level, find the distance
+            max_hor_intersection = max(
+                max_hor_intersection,
+                abs(contour_left[level][1] - contour_right[level][0]),
+            )
+
+        dist_between_children = max_hor_intersection + MIN_NODE_GAP
+
+        # print(
+        #     f"[{root.val}] dist between '{root.left and root.left.val}' & '{root.right and root.right.val}' = {dist_between_children}"
+        # )
+
+        offset_distance = 1 + dist_between_children // 2
+
+        # Create the merged contour
+        contour = {0: (0, 0)}
+        for level in range(level_count):
+            leftmost = 0
+            rightmost = 0
+
+            # Create left contour
+            if level in contour_left:
+                leftmost = contour_left[level][0] - offset_distance
+            elif level in contour_right:
+                leftmost = contour_right[level][0] + offset_distance
+
+            # Create right contour
+            if level in contour_right:
+                rightmost = contour_right[level][1] + offset_distance
+            elif level in contour_left:
+                rightmost = contour_left[level][1] - offset_distance
+
+            contour[level + 1] = (leftmost, rightmost)
+
+        contours[root] = contour
+        return contour
+
+    get_contour(root)
+
+    leftmost = min(contours[root][level][0] for level in contours[root])
+    rightmost = max(contours[root][level][1] for level in contours[root])
+    width = rightmost - leftmost + 1
+
     height = BTAlgos.get_depth(root)
-    count = BTAlgos.count_nodes(root)
 
     BLANK = "  "
+    grid = [[BLANK] * (width) for _ in range(2 * height + 1)]
 
-    def line_style(text: str) -> str:
-        return f"[yellow]{text}[/]"
+    def line_format(s: str):
+        return f"[{line_color}]{s}[/]"
 
-    UNDERLINE = line_style("__")
-
-    # nodes and underscores at grid[2*depth]
-    # slashes at grid[2*depth+1]
-    grid = [[BLANK] * count for i in range(2 * height + 1)]
-
-    v_slice = [0]
-
-    def travel(root: Optional[TreeNode], depth: int):
+    def recursive_draw(root: Optional[TreeNode], x: int, depth: int):
         if root == None:
             return
 
-        travel(root.left, depth + 1)
+        grid[2 * depth][x] = f"[on {box_color}]  [/]"
 
-        # Add this node to grid
-        slice = v_slice[0]
-        grid[2 * depth][slice] = f"[on green]{BLANK}[/]"
-        v_slice[0] += 1
+        if not root in contours:
+            return
 
-        travel(root.right, depth + 1)
+        contour = contours[root]
+        (offset_left, offset_right) = contour[1]
 
-        # Add underlines to left
         if root.left:
-            for i in range(slice - 1, -1, -1):
-                below = grid[2 * (depth + 1)][i]
-                if below == BLANK or below == UNDERLINE:
-                    grid[2 * depth][i] = UNDERLINE
-                else:
-                    grid[2 * depth + 1][i] = line_style(" /")
-                    break
-        # Add underlines to right
+            # Go left
+            left_child_x = x + offset_left
+            for i in range(left_child_x + 1, x):
+                grid[2 * depth][i] = line_format("__")
+            grid[2 * depth + 1][left_child_x] = line_format(" /")
+            recursive_draw(root.left, left_child_x, depth + 1)
+
         if root.right:
-            for i in range(slice + 1, count):
-                below = grid[2 * (depth + 1)][i]
-                if below == BLANK or below == UNDERLINE:
-                    grid[2 * depth][i] = UNDERLINE
-                else:
-                    grid[2 * depth + 1][i] = line_style("\ ")
-                    break
+            # Go right
+            right_child_x = x + offset_right
+            for i in range(x + 1, right_child_x):
+                grid[2 * depth][i] = line_format("__")
+            grid[2 * depth + 1][right_child_x] = line_format("\ ")
+            recursive_draw(root.right, x + offset_right, depth + 1)
 
-    travel(root, 0)
+    recursive_draw(root, -leftmost, 0)
 
-    output = "\n".join(["".join(row) for row in grid])
-
-    rich_print(output)
+    from rich import print as rich_print
+    rich_print("\n".join("".join(row) for row in grid))
