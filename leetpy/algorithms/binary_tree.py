@@ -6,6 +6,27 @@ from typing import Optional, List, Dict
 from ..types import TreeNode
 
 
+def travel_preorder(root: Optional[TreeNode]):
+    if root is not None:
+        yield root
+        yield from travel_preorder(root.left)
+        yield from travel_preorder(root.right)
+
+
+def travel_inorder(root: Optional[TreeNode]):
+    if root is not None:
+        yield from travel_inorder(root.left)
+        yield root
+        yield from travel_inorder(root.right)
+
+
+def travel_postorder(root: Optional[TreeNode]):
+    if root is not None:
+        yield from travel_postorder(root.left)
+        yield from travel_postorder(root.right)
+        yield root
+
+
 def count_nodes(root: Optional[TreeNode]) -> int:
     if root == None:
         return 0
