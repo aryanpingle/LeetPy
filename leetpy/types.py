@@ -57,3 +57,12 @@ class TreeNode:
         self.val = val
         self.left = left
         self.right = right
+
+    def __str__(self):
+        """
+        A string representation is NOT provided by Leetcode.
+        This is purely for your convenience.
+        """
+        left_str = None if self.left is None else f"Node({self.left.val})"
+        right_str = None if self.right is None else f"Node({self.right.val})"
+        return f"Node({self.val},L={left_str},R={right_str})"
