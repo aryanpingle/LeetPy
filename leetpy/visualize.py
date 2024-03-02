@@ -120,7 +120,7 @@ def print_binary_tree(
         if root is None:
             return
 
-        grid[2 * depth][x] = f"[on {box_color}]  [/]"
+        grid[2 * depth][x] = f"[{box_color}]██[/]"
 
         # If this is a leaf, exit
         if not root in contours:
