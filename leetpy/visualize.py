@@ -13,6 +13,7 @@ from .algorithms import binary_tree as BTAlgos
 
 def print_binary_tree(
     root: Optional[TreeNode],
+    title: str = None,
     box_color: str = "magenta",
     line_color: str = "white",
 ):
@@ -112,6 +113,11 @@ def print_binary_tree(
 
     BLANK = "  "
     grid = [[BLANK] * (width) for _ in range(2 * height + 1)]
+
+    # Print title
+    if title:
+        rich_print(f"[italic]{' '.join(['~', title, '~']):^{2*width}}[/]")
+        print()
 
     def line_format(s: str):
         return f"[{line_color}]{s}[/]"
