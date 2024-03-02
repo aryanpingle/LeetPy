@@ -20,7 +20,7 @@ def print_binary_tree(
     Prints the rooted binary tree in a visually appealing format
     """
 
-    MIN_NODE_GAP = 3
+    MIN_NODE_GAP = 1
 
     contours: Dict[TreeNode, dict] = {}
 
@@ -72,7 +72,7 @@ def print_binary_tree(
             # if both have this level, find the distance
             max_hor_intersection = max(
                 max_hor_intersection,
-                abs(contour_left[level][1] - contour_right[level][0]),
+                contour_left[level][1] - contour_right[level][0],
             )
 
         dist_between_children = max_hor_intersection + MIN_NODE_GAP
@@ -122,27 +122,46 @@ def print_binary_tree(
 
         grid[2 * depth][x] = f"[on {box_color}]  [/]"
 
+        # If this is a leaf, exit
         if not root in contours:
             return
 
         contour = contours[root]
         (offset_left, offset_right) = contour[1]
 
+        # Special case to accomodate straight line exceptions
+        below_current = [" ", " "]
+
         if root.left:
             # Go left
             left_child_x = x + offset_left
             for i in range(left_child_x + 1, x):
-                grid[2 * depth][i] = line_format("__")
-            grid[2 * depth + 1][left_child_x] = line_format(" /")
+                grid[2 * depth + 1][i] = line_format("──")
+
+            if offset_left == -1:  # immediately to the left, use a straight line
+                below_current[0] = "/"
+            else:  # far away, use fancy lines
+                below_current[0] = "┘"
+                grid[2 * depth + 1][left_child_x] = " ┌"
+
             recursive_draw(root.left, left_child_x, depth + 1)
 
         if root.right:
             # Go right
             right_child_x = x + offset_right
             for i in range(x + 1, right_child_x):
-                grid[2 * depth][i] = line_format("__")
-            grid[2 * depth + 1][right_child_x] = line_format("\\ ")
+                grid[2 * depth + 1][i] = line_format("──")
+
+            if offset_right == +1:  # immediately to the right, use a straight line
+                below_current[1] = r"\\"
+            else:  # far away, use fancy lines
+                below_current[1] = "└"
+                grid[2 * depth + 1][right_child_x] = "┐ "
+
             recursive_draw(root.right, x + offset_right, depth + 1)
+
+        # ┐┌┘└─
+        grid[2 * depth + 1][x] = line_format("".join(below_current))
 
     recursive_draw(root, -leftmost, 0)
 
