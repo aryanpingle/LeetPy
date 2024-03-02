@@ -4,19 +4,39 @@ Utility functions that let you create randomized data structures like Binary Tre
 
 import random
 from collections import deque
-from typing import Optional, List, Deque
-from .algorithms.binary_tree import travel_inorder
+from typing import Optional, Deque
+from .algorithms import binary_tree as BTAlgos
 from .types import TreeNode
 
 
 def create_binary_tree(
-    n: int = 8,
+    n: int,
     min_val: int = -2147483648,
     max_val: int = 2147483647,
-    index_as_val: bool = True,
+    index_as_val: bool = False,
     make_complete: bool = False,
     make_bst: bool = False,
-) -> TreeNode:
+) -> Optional[TreeNode]:
+    """Generates a rooted binary tree with based on the parameters, and returns the root.
+    Node values are randomly generated, except when `make_complete` is enabled.
+
+    Args:
+        n: The number of nodes to be generated as part of the binary tree.
+        min_val: The minimum possible value of any randomly generated node value.
+        min_val: The maximum possible value of any randomly generated node value.
+        index_as_val: Enabling this sets node values to the 0-based order in  \
+            which they were created. Overrides `min_val` and `max_val`.
+        make_complete: Enabling this ensures the generated binary tree will \
+            satisfy the properties of a Complete Binary Tree i.e. All levels \
+            except the last will be filled to the end, and the last level will \
+            be filled from left to right.
+        make_bst: Enabling this ensures the generated binary tree will satisfy \
+            the properties of a Binary Search Tree i.e. the inorder traversal of \
+            node values yields a sorted array.
+    """
+    if n <= 0:
+        return None
+
     root = TreeNode(random.randint(min_val, max_val))
 
     if index_as_val:
@@ -63,10 +83,10 @@ def create_binary_tree(
             q.appendleft(curr)
 
     if make_bst:
-        arr = [i.val for i in travel_inorder(root)]
+        arr = [i.val for i in BTAlgos.travel_inorder(root)]
         arr.sort()
         i = 0
-        for node in travel_inorder(root):
+        for node in BTAlgos.travel_inorder(root):
             node.val = arr[i]
             i += 1
 
