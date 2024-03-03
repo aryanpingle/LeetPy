@@ -102,7 +102,7 @@ def search_and_display(
     table.add_column("Title", style="bold green")
     table.add_column(
         "Link",
-        style="blue",
+        style="bold magenta",
         no_wrap=True,
     )
 
@@ -116,8 +116,8 @@ def search_and_display(
         question_url = "https://leetcode.com/problems/" + question["title_slug"]
         table.add_row(
             str(question["id"]),
-            ", ".join([f"[magenta]{topic}[/]" for topic in question["topics"]]),
-            question["title"],
+            ", ".join([f"[blue]{topic}[/]" for topic in question["topics"]]),
+            question["title"] if not question["is_paid_only"] else f"[yellow]{question['title']}[/] 🔒",
             question_url,
         )
 
