@@ -98,8 +98,8 @@ def search_and_display(
     )
 
     table.add_column("ID", style="bold cyan")
-    table.add_column("Title", style="green")
     table.add_column("Topics")
+    table.add_column("Title", style="bold green")
     table.add_column(
         "Link",
         style="blue",
@@ -116,8 +116,8 @@ def search_and_display(
         question_url = "https://leetcode.com/problems/" + question["title_slug"]
         table.add_row(
             str(question["id"]),
+            ", ".join([f"[magenta]{topic}[/]" for topic in question["topics"]]),
             question["title"],
-            " * ".join([f"[bold magenta]{topic}[/]" for topic in question["topics"]]),
             question_url,
         )
 
@@ -197,8 +197,19 @@ if __name__ == "__main__":
 
     # Show the list of topics
     if args.list_topics:
-        formatted_result = [f"[bold magenta]{topic}[/]" for topic in metadata["topics"]]
-        rich_print(" * ".join(formatted_result))
+        topic_index = 0
+        
+        topics_list = metadata["topics"]
+        topics_by_letter: Dict[str, list] = {}
+        for topic in topics_list:
+            letter = topic[0]
+            if not letter in topics_by_letter:
+                topics_by_letter[letter] = []
+            topics_by_letter[letter].append(topic)
+
+        for letter in topics_by_letter:
+            formatted_topics = [f"[blue]{topic}[/]" for topic in topics_by_letter[letter]]
+            rich_print(f"{letter}: {', '.join(formatted_topics)}")
 
         exit(0)
 
