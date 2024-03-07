@@ -96,3 +96,21 @@ def create_binary_tree(
             i += 1
 
     return root
+
+
+def create_2d_array(
+    rows: int,
+    cols: int,
+    min_val: int = INT_MIN,
+    max_val: int = INT_MAX,
+    index_as_val: bool = False,
+):
+    arr = [
+        [
+            (row * cols + col if index_as_val else random.randint(min_val, max_val))
+            for col in range(cols)
+        ]
+        for row in range(rows)
+    ]
+
+    return arr

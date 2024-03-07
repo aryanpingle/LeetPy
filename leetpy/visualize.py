@@ -4,7 +4,7 @@ Utility functions that let you debug data structures by printing them to the scr
 Binary Tree Inspiration: https://github.com/miguelmota/ascii-binary-tree
 """
 
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 from rich import print as rich_print
 
 from .types import TreeNode
@@ -174,3 +174,43 @@ def print_binary_tree(
     recursive_draw(root, -leftmost, 0)
 
     rich_print("\n".join("".join(row) for row in grid))
+
+
+def print_2d_array(arr: List[List[int]], title: Optional[str] = None):
+    ROWS = len(arr)
+    COLS = len(arr[0])
+
+    # The size of the columns (based on the largest element)
+    col_width = 1
+    for row in range(ROWS):
+        for col in range(COLS):
+            entry_width = len(str(arr[row][col]))
+            col_width = max(col_width, entry_width)
+    col_width = max(col_width, len(str(COLS - 1)))
+
+    # Size of the column showing row indices
+    first_col_width = len(str(ROWS - 1))
+
+    TABLE_WIDTH = first_col_width + ((col_width + 1) * COLS)
+
+    if title is not None:
+        rich_print(f"[italic]{' '.join(['~', title, '~']):^{TABLE_WIDTH}}[/]")
+        print()
+
+    INDEX_STYLE = "yellow"
+
+    # Print column indices
+    header_row = " ".join(
+        [
+            " " * first_col_width,
+            *[f"{col:>{col_width}}" for col in range(COLS)],
+        ]
+    )
+    rich_print(f"[{INDEX_STYLE}]{header_row}[/]")
+
+    # Print rows
+    for row_index in range(ROWS):
+        rich_print(
+            f"[{INDEX_STYLE}]{row_index:>{first_col_width}}[/]",
+            *[f"{entry:>{col_width}}" for entry in arr[row_index]],
+        )
