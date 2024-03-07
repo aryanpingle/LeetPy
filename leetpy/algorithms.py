@@ -48,6 +48,17 @@ class BinaryTreeAlgos:
             yield root
 
     @staticmethod
+    def search(root: Optional[TreeNode], val: any) -> Optional[TreeNode]:
+        """
+        Searches nodes in a binary tree for the given value in an inorder traversal.
+        Returns the first node that contains the given value, or `None` if not found.
+        """
+        for node in BinaryTreeAlgos.travel_inorder(root):
+            if node.val == val:
+                return node
+        return None
+
+    @staticmethod
     def travel_levelorder(root: Optional[TreeNode]):
         """
         Generator function that yields nodes in a levelorder traversal (left to right for each level in the binary tree).
