@@ -4,7 +4,7 @@ Utility functions that let you create randomized data structures like Binary Tre
 
 from collections import deque
 import random
-from typing import Optional, Deque
+from typing import Deque, List, Optional
 
 from .algorithms import BinaryTreeAlgos as BTAlgos
 from .types import TreeNode
@@ -104,13 +104,31 @@ def create_2d_array(
     min_val: int = INT_MIN,
     max_val: int = INT_MAX,
     index_as_val: bool = False,
+    choices: List[any] = [],
 ):
-    arr = [
-        [
-            (row * cols + col if index_as_val else random.randint(min_val, max_val))
-            for col in range(cols)
+    """Generates and returns a 2-dimensional array based on the given parameters.
+    If a list `choices` is provided, a random choice is chosen for each cell value. \
+    Otherwise, cell values are randomly generated in the range [`min_val`, `max_val`].
+    
+    Args:
+        rows: The number of rows in the 2D array.
+        cols: The number of columns in the 2D array.
+        min_val: The minimum possible value of any randomly generated cell value.
+        max_val: The maximum possible value of any randomly generated cell value.
+        index_as_val: Enabling this sets cell values to the 0-based order in \
+            which they were created. Overrides `min_val` and `max_val`.
+        choices: A list of possible cell values to be randomly chosen from.
+    """
+    arr = None
+    if choices:
+        arr = [[random.choice(choices) for col in range(cols)] for row in range(rows)]
+    else:
+        arr = [
+            [
+                (row * cols + col if index_as_val else random.randint(min_val, max_val))
+                for col in range(cols)
+            ]
+            for row in range(rows)
         ]
-        for row in range(rows)
-    ]
 
     return arr
