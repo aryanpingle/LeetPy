@@ -2,17 +2,22 @@
 Utility functions that let you create randomized data structures like Binary Trees
 """
 
-import random
 from collections import deque
+import random
 from typing import Optional, Deque
-from .algorithms import binary_tree as BTAlgos
+
+from .algorithms import BinaryTreeAlgos as BTAlgos
 from .types import TreeNode
+
+
+INT_MIN = -2147483648
+INT_MAX = 2147483647
 
 
 def create_binary_tree(
     n: int,
-    min_val: int = -2147483648,
-    max_val: int = 2147483647,
+    min_val: int = INT_MIN,
+    max_val: int = INT_MAX,
     index_as_val: bool = False,
     make_complete: bool = False,
     make_bst: bool = False,
@@ -24,7 +29,7 @@ def create_binary_tree(
         n: The number of nodes to be generated as part of the binary tree.
         min_val: The minimum possible value of any randomly generated node value.
         min_val: The maximum possible value of any randomly generated node value.
-        index_as_val: Enabling this sets node values to the 0-based order in  \
+        index_as_val: Enabling this sets node values to the 0-based order in \
             which they were created. Overrides `min_val` and `max_val`.
         make_complete: Enabling this ensures the generated binary tree will \
             satisfy the properties of a Complete Binary Tree i.e. All levels \

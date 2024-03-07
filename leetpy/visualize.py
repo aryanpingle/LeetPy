@@ -8,7 +8,7 @@ from typing import Optional, Dict
 from rich import print as rich_print
 
 from .types import TreeNode
-from .algorithms import binary_tree as BTAlgos
+from .algorithms import BinaryTreeAlgos as BTAlgos
 
 
 def print_binary_tree(
@@ -18,10 +18,12 @@ def print_binary_tree(
     line_color: str = "white",
 ):
     """
-    Prints the rooted binary tree in a visually appealing format
+    Prints the rooted binary tree in a visually appealing format.
+
+    Loosely based on the Reingold-Tilford Algorithm.
     """
 
-    MIN_NODE_GAP = 1
+    MIN_NODE_GAP = 3
 
     contours: Dict[TreeNode, dict] = {}
 
