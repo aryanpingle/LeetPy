@@ -22,13 +22,13 @@ def create_binary_tree(
     make_complete: bool = False,
     make_bst: bool = False,
 ) -> Optional[TreeNode]:
-    """Generates a rooted binary tree with based on the parameters, and returns the root.
-    Node values are randomly generated, except when `make_complete` is enabled.
+    """Generates a rooted binary tree based on the parameters, and returns the root.
+    Node values are randomly generated, except when `index_as_val` is enabled.
 
     Args:
         n: The number of nodes to be generated as part of the binary tree.
         min_val: The minimum possible value of any randomly generated node value.
-        min_val: The maximum possible value of any randomly generated node value.
+        max_val: The maximum possible value of any randomly generated node value.
         index_as_val: Enabling this sets node values to the 0-based order in \
             which they were created. Overrides `min_val` and `max_val`.
         make_complete: Enabling this ensures the generated binary tree will \
