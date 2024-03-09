@@ -4,7 +4,7 @@ Utility functions that let you create randomized data structures like Binary Tre
 
 from collections import deque
 import random
-from typing import Deque, List, Optional
+from typing import Deque, Iterable, Optional
 
 from .algorithms import BinaryTreeAlgos as BTAlgos
 from .types import TreeNode
@@ -104,7 +104,7 @@ def create_2d_array(
     min_val: int = INT_MIN,
     max_val: int = INT_MAX,
     index_as_val: bool = False,
-    choices: List[any] = [],
+    choices: Iterable = [],
 ):
     """Generates and returns a 2-dimensional array based on the given parameters.
     If a list `choices` is provided, a random choice is chosen for each cell value. \
