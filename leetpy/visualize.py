@@ -200,17 +200,33 @@ def print_2d_array(arr: List[List[int]], title: Optional[str] = None):
     INDEX_STYLE = "yellow"
 
     # Print column indices
-    header_row = " ".join(
+    row__column_indices = "".join(
         [
             " " * first_col_width,
-            *[f"{col:>{col_width}}" for col in range(COLS)],
+            " ",
+            "│",
+            f"[{INDEX_STYLE}]",  # begin style
+            *[f" {col:^{col_width}}" for col in range(COLS)],
+            f"[/]",  # end style
         ]
     )
-    rich_print(f"[{INDEX_STYLE}]{header_row}[/]")
+    rich_print(row__column_indices)
+    # Print horizontal grid line
+    print(
+        "─" * first_col_width,  # cover column containing indices of rows
+        "─",  # spacing
+        "┼",  # intersection of grid lines
+        "─" * (COLS * (col_width + 1)),  # cover table columns (with spacing)
+        sep="",
+    )
 
     # Print rows
     for row_index in range(ROWS):
+        # Print row indices
         rich_print(
             f"[{INDEX_STYLE}]{row_index:>{first_col_width}}[/]",
-            *[f"{entry:>{col_width}}" for entry in arr[row_index]],
+            " │ ",
+            sep="",
+            end="",
         )
+        rich_print(*[f"{entry:^{col_width}}" for entry in arr[row_index]])
