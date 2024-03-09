@@ -191,9 +191,8 @@ def print_2d_array(arr: List[List[int]], title: Optional[str] = None):
     # Size of the column showing row indices
     first_col_width = len(str(ROWS - 1))
 
-    TABLE_WIDTH = first_col_width + ((col_width + 1) * COLS)
-
     if title is not None:
+        TABLE_WIDTH = first_col_width + 1 + (1 + (col_width + 1) * COLS)
         rich_print(f"[italic]{' '.join(['~', title, '~']):^{TABLE_WIDTH}}[/]")
         print()
 
