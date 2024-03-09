@@ -6,7 +6,7 @@ Todo:
 """
 
 from collections import deque
-from typing import Optional
+from typing import List, Optional, Tuple
 
 from .types import TreeNode
 
@@ -129,3 +129,42 @@ class BinaryTreeAlgos:
 
         util(root)
         return count[0]
+
+
+class Array2DAlgos:
+    """
+    Contains algorithms and utility functions relating to 2D Arrays (Matrices).
+    All functions are static and stateless.
+    """
+
+    @staticmethod
+    def count(arr: List[List[any]]):
+        """Returns the number of cells in the given 2D array."""
+        return len(arr) * len(arr[0])
+
+    @staticmethod
+    def travel(arr: List[List[any]]) -> any:
+        """
+        Generator function that returns the elements of the 2D array from \
+        left-to-right, and top-to-bottom.
+        """
+        ROWS = len(arr)
+        COLS = len(arr[0])
+        for row_index in range(ROWS):
+            for col_index in range(COLS):
+                yield arr[row_index][col_index]
+
+    @staticmethod
+    def search(arr: List[List[any]], val: any) -> Optional[Tuple[int]]:
+        """
+        Searches the 2D array for the given value from left-to-right, and top-to-bottom.
+        Returns the 0-based cell coordinates that contains the given value, or \
+        `None` if not found.
+        """
+        ROWS = len(arr)
+        COLS = len(arr[0])
+        for row_index in range(ROWS):
+            for col_index in range(COLS):
+                if arr[row_index][col_index] == val:
+                    return (row_index, col_index)
+        return None
