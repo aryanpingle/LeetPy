@@ -3,7 +3,6 @@ import json
 import random
 from typing import Deque, List, Optional
 
-from ..algorithms import BinaryTreeAlgos as BTAlgos
 from ..types import TreeNode
 
 
@@ -12,6 +11,38 @@ INT_MAX = 2147483647
 
 
 class BinaryTree:
+    """
+    Algorithms and utility functions related to the Binary Tree data structure. All
+    functions are static and stateless.
+    """
+
+    @staticmethod
+    def count_leaf_nodes(root: Optional[TreeNode]) -> int:
+        """
+        Returns the number of leaf nodes in the given binary tree.
+        """
+        count = [0]
+
+        def util(root):
+            if root == None:
+                return
+            if root.left or root.right:
+                util(root.left)
+                util(root.right)
+            else:
+                count[0] += 1
+
+        util(root)
+        return count[0]
+
+    @staticmethod
+    def count_nodes(root: Optional[TreeNode]) -> int:
+        if root == None:
+            return 0
+        return (
+            1 + BinaryTree.count_nodes(root.left) + BinaryTree.count_nodes(root.right)
+        )
+
     @staticmethod
     def create(
         n: int,
@@ -87,10 +118,10 @@ class BinaryTree:
                 q.appendleft(curr)
 
         if make_bst:
-            arr = [i.val for i in BTAlgos.travel_inorder(root)]
+            arr = [i.val for i in BinaryTree.travel_inorder(root)]
             arr.sort()
             i = 0
-            for node in BTAlgos.travel_inorder(root):
+            for node in BinaryTree.travel_inorder(root):
                 node.val = arr[i]
                 i += 1
 
@@ -135,6 +166,33 @@ class BinaryTree:
             is_left = not is_left
 
         return root
+
+    @staticmethod
+    def export_as_leetcode_array(root: Optional[TreeNode]) -> str:
+        """
+        Generate a representation of the given rooted binary tree in Leetcode's testcase
+        format.
+
+        This representation can be directly pasted into a Leetcode custom testcase.
+        """
+        arr = []
+        q = deque([root])
+        while q:
+            curr = q.popleft()
+
+            if curr is None:
+                arr.append("null")
+                continue
+
+            arr.append(str(curr.val))
+            q.append(curr.left)
+            q.append(curr.right)
+
+        # Get rid of redundant "null" nodes
+        while arr and arr[-1] == "null":
+            arr.pop()
+
+        return "[" + ",".join(arr) + "]"
 
     @staticmethod
     def export_as_function(
@@ -231,28 +289,90 @@ class BinaryTree:
         )
 
     @staticmethod
-    def export_as_leetcode_array(root: Optional[TreeNode]) -> str:
+    def get_depth(root: Optional[TreeNode]) -> int:
         """
-        Generate a representation of the given rooted binary tree in Leetcode's testcase
-        format.
+        Returns the maximum depth/height of the given binary tree. For a single root node,
+        the depth is 1.
+        """
+        if root == None:
+            return 0
+        return 1 + max(
+            BinaryTree.get_depth(root.left), BinaryTree.get_depth(root.right)
+        )
 
-        This representation can be directly pasted into a Leetcode custom testcase.
+    @staticmethod
+    def is_binary_search_tree(root: Optional[TreeNode]) -> bool:
         """
-        arr = []
+        Checks if the given Binary Tree satisfies the properties of the Binary Search Tree
+        data structure.
+        """
+
+        def util(root, min_val, max_val) -> bool:
+            if root == None:
+                return True
+            if root.val >= max_val or root.val <= min_val:
+                return False
+            return util(root.left, min_val, root.val) and util(
+                root.right, root.val, max_val
+            )
+
+        return util(root, -float("inf"), float("inf"))
+
+    @staticmethod
+    def search(root: Optional[TreeNode], val: any) -> Optional[TreeNode]:
+        """
+        Searches nodes in a binary tree for the given value in an inorder traversal.
+        Returns the first node that contains the given value, or `None` if not found.
+        """
+        for node in BinaryTree.travel_inorder(root):
+            if node.val == val:
+                return node
+        return None
+
+    @staticmethod
+    def travel_inorder(root: Optional[TreeNode]):
+        """
+        Generator function that yields nodes in an inorder traversal (left -> root ->
+        right).
+        """
+        if root is not None:
+            yield from BinaryTree.travel_inorder(root.left)
+            yield root
+            yield from BinaryTree.travel_inorder(root.right)
+
+    @staticmethod
+    def travel_levelorder(root: Optional[TreeNode]):
+        """
+        Generator function that yields nodes in a levelorder traversal (left to right for
+        each level in the binary tree).
+        """
         q = deque([root])
         while q:
             curr = q.popleft()
+            yield curr
+            if curr.left:
+                q.append(curr.left)
+            if curr.right:
+                q.append(curr.right)
 
-            if curr is None:
-                arr.append("null")
-                continue
+    @staticmethod
+    def travel_postorder(root: Optional[TreeNode]):
+        """
+        Generator function that yields nodes in a postorder traversal (left -> right ->
+        root).
+        """
+        if root is not None:
+            yield from BinaryTree.travel_postorder(root.left)
+            yield from BinaryTree.travel_postorder(root.right)
+            yield root
 
-            arr.append(str(curr.val))
-            q.append(curr.left)
-            q.append(curr.right)
-
-        # Get rid of redundant "null" nodes
-        while arr and arr[-1] == "null":
-            arr.pop()
-
-        return "[" + ",".join(arr) + "]"
+    @staticmethod
+    def travel_preorder(root: Optional[TreeNode]):
+        """
+        Generator function that yields nodes in an preorder traversal (root -> left ->
+        right).
+        """
+        if root is not None:
+            yield root
+            yield from BinaryTree.travel_preorder(root.left)
+            yield from BinaryTree.travel_preorder(root.right)
