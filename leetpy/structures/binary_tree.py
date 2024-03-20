@@ -22,22 +22,21 @@ class BinaryTree:
         make_bst: bool = False,
     ) -> Optional[TreeNode]:
         """
-        Generates a rooted binary tree based on the parameters, and returns the root.
-        Node values are randomly generated, except when `index_as_val` is enabled.
+        Create a rooted binary tree based on the parameters.
 
         Args:
             n: The number of nodes to be generated as part of the binary tree.
             min_val: The minimum possible value of any randomly generated node value.
             max_val: The maximum possible value of any randomly generated node value.
-            index_as_val: Enabling this sets node values to the 0-based order in \
-                which they were created. Overrides `min_val` and `max_val`.
-            make_complete: Enabling this ensures the generated binary tree will \
-                satisfy the properties of a Complete Binary Tree i.e. All levels \
-                except the last will be filled to the end, and the last level will \
-                be filled from left to right.
-            make_bst: Enabling this ensures the generated binary tree will satisfy \
-                the properties of a Binary Search Tree i.e. the inorder traversal of \
-                node values yields a sorted array.
+            index_as_val: Enabling this sets node values to the 0-based order in which
+                they were created. Overrides `min_val` and `max_val`.
+            make_complete: Enabling this ensures the generated binary tree will satisfy
+                the properties of a Complete Binary Tree i.e. All levels except the last
+                will be filled to the end, and the last level will be filled from left to
+                right.
+            make_bst: Enabling this ensures the generated binary tree will satisfy the
+                properties of a Binary Search Tree i.e. the inorder traversal of node
+                values yields a sorted array.
         """
         if n <= 0:
             return None
@@ -98,18 +97,16 @@ class BinaryTree:
         return root
 
     @staticmethod
-    def import_from_leetcode_array(leetcode_str: str) -> Optional[TreeNode]:
+    def create_from_leetcode_array(leetcode_str: str) -> Optional[TreeNode]:
         """
-        Creates a rooted binary tree from the given Leetcode testcase format and \
-        returns its root.
+        Create a rooted binary tree from a string in Leetcode's testcase format.
 
-        In the Leetcode format, a level-order traversal is followed where direct \
-        children of non-null nodes must always be specified. i.e. "null" denotes \
-        that the parent node has a null node as its left/right child. Children of \
-        null nodes are omitted.
+        In the Leetcode format, a level-order traversal is followed where direct children
+        of non-null nodes must always be specified. i.e. "null" denotes that the parent
+        node has a null node as its left/right child. Children of null nodes are omitted.
 
         Example:
-            `import_from_leetcode_array("[1,null,2,null,3]")`
+            `create_from_leetcode_array("[1,null,2,null,3]")`
         """
 
         leetcode_arr: List[Optional[int]] = json.loads(leetcode_str)
@@ -148,19 +145,18 @@ class BinaryTree:
         type_hints: bool = True,
     ) -> str:
         """
-        Generates and returns the code for a Python3 function that creates the given \
-        rooted binary tree.
-        
+        Generate code for a Python3 function that returns the root of the given binary
+        tree.
+
         Args:
             root: The root node of a binary tree.
             indent: The number of spaces to be used while indenting the function body.
-            function_name: The name of the function in the generated code. \
-                (default = "get_root") 
-            node_alias: The name of the class used to create a node for the binary \
-                tree. (default = "TreeNode")
-            type_hints: When enabled, the function code will have a Python3 return \
-                type declaration for the given node_alias. \
-                (example: `-> Optional[TreeNode]`)
+            function_name: The name of the function in the generated code. (default =
+                "get_root")
+            node_alias: The name of the class used to create a node for the binary tree.
+                (default = "TreeNode")
+            type_hints: When enabled, the function code will have a Python3 return type
+                declaration for the given node_alias. (example: `-> Optional[TreeNode]`)
         """
         code__return_type = f" -> Optional[{node_alias}]" if type_hints else ""
         code__func_signature = f"def {function_name}(){code__return_type}:"
@@ -237,7 +233,8 @@ class BinaryTree:
     @staticmethod
     def export_as_leetcode_array(root: Optional[TreeNode]) -> str:
         """
-        Returns the Leetcode array representation of the given rooted binary tree.
+        Generate a representation of the given rooted binary tree in Leetcode's testcase
+        format.
 
         This representation can be directly pasted into a Leetcode custom testcase.
         """
