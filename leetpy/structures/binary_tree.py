@@ -2,6 +2,7 @@ from collections import deque
 import json
 import random
 from typing import Deque, List, Optional
+from rich import print as rich_print
 
 from ..types import TreeNode
 
@@ -317,6 +318,37 @@ class BinaryTree:
             )
 
         return util(root, -float("inf"), float("inf"))
+
+    @staticmethod
+    def print_leveled(root: Optional[TreeNode], data_attr_name: str = "val"):
+        """
+        Print an indented representation of a binary tree.
+
+        There are other algorithms that are visually easier on the eyes, and have the same
+        time complexity. The only benefit of this algorithm is that the code is easily
+        readable, and can thus be trusted to always give the correct output.
+
+        Args:
+            data_attr_name: The name of the attribute storing the node's data. Useful in
+                situations where you pass a custom node definition.
+        """
+        def _print__leveled(root: Optional[TreeNode], level: int):
+            if root is None:
+                return
+
+            indent_string = " " * (2 * level)
+            print(indent_string, f"{getattr(root, data_attr_name)}", sep="")
+
+            if root.left:
+                _print__leveled(root.left, level + 1)
+            else:
+                rich_print(indent_string, "  ", "[italic]~ no left node[/]", sep="")
+
+            if root.right:
+                _print__leveled(root.right, level + 1)
+            else:
+                rich_print(indent_string, "  ", "[italic]~ no right node[/]", sep="")
+        _print__leveled(root, 0)
 
     @staticmethod
     def search(root: Optional[TreeNode], val: any) -> Optional[TreeNode]:
