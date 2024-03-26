@@ -4,6 +4,8 @@ import random
 from typing import Deque, Iterator, List, Optional, Set
 from rich import print as rich_print
 
+from ._reingold_tilford_algorithm import TR_create_drawing, TR_Node
+
 from ..types import TreeNode
 
 
@@ -319,7 +321,7 @@ class BinaryTree:
     @staticmethod
     def is_binary_search_tree(root: Optional[TreeNode]) -> bool:
         """
-        Checks if the given Binary Tree satisfies the properties of the Binary Search Tree
+        Check if the given Binary Tree satisfies the properties of the Binary Search Tree
         data structure.
         """
 
@@ -354,6 +356,101 @@ class BinaryTree:
             visited.add(node)
 
         return False
+
+    @staticmethod
+    def print_structure(root: Optional[TreeNode]):
+        """
+        Print the shape of the given rooted binary tree to the terminal.
+        """
+        TR_root = TR_create_drawing(root)
+
+        # Find the minimum and maximum x and y coordinates (grid bounds)
+        x_bounds = [0, 0]
+        y_bounds = [0, 0]
+
+        def calculate_bounds(root: TR_Node):
+            if root is None:
+                return
+            x_bounds[0] = min(x_bounds[0], root.x_coord)
+            x_bounds[1] = max(x_bounds[1], root.x_coord)
+            y_bounds[0] = min(y_bounds[0], root.y_coord)
+            y_bounds[1] = max(y_bounds[1], root.y_coord)
+
+            calculate_bounds(root.left)
+            calculate_bounds(root.right)
+
+        calculate_bounds(TR_root)
+
+        # x-coordinates may be negative
+        # increment them enough so that the leftmost is at x=0
+        def increment_x(node: TR_Node, increment: int):
+            if node is None:
+                return
+            node.x_coord += increment
+            increment_x(node.left, increment)
+            increment_x(node.right, increment)
+
+        increment_x(TR_root, -x_bounds[0])
+
+        height = y_bounds[1] - y_bounds[0] + 1
+        width = x_bounds[1] - x_bounds[0] + 1
+
+        # x-coordinates are literal
+        # y-cordinates of nodes skip a level to allow for lines
+        grid = [[" "] * width for _ in range(2 * height - 1)]
+
+        # Relevant unicode characters
+        # ─╱╲┴
+        # ┐┘┌└
+        # ╮╯╭╰
+
+        def draw_node(TR_node: TR_Node):
+            if TR_node is None:
+                return
+
+            x = TR_node.x_coord
+            y = 2 * TR_node.y_coord
+            offset = TR_node.offset
+
+            # Draw the node
+            grid[y][x] = "*"
+
+            # Draw children recursively
+            draw_node(TR_node.left)
+            draw_node(TR_node.right)
+
+            # Draw a line to the left node
+            if TR_node.left:
+                left_index = x - offset
+                if offset == 2:  # Immediately to the left
+                    grid[y + 1][left_index + 1] = "╱"
+                else:  # Far to the left
+                    for i in range(left_index + 1, x):
+                        grid[y + 1][i] = "─"
+                    grid[y + 1][x] = "┘"
+                    grid[y + 1][left_index] = "┌"
+
+            # Draw a line to the right node
+            if TR_node.right:
+                right_index = x + offset
+                if offset == 2:  # Immediately to the right
+                    grid[y + 1][right_index - 1] = "╲"
+                else:  # Far to the right
+                    for i in range(x + 1, right_index):
+                        grid[y + 1][i] = "─"
+                    grid[y + 1][x] = "└"
+                    grid[y + 1][right_index] = "┐"
+
+            if TR_node.left and TR_node.right and offset != 2:
+                grid[y + 1][x] = "┴"
+
+        draw_node(TR_root)
+
+        # Print characters to screen
+        print("╭", "─" * (width + 2), "╮", sep="")
+        for row in grid:
+            print("│", "".join(row), "│")
+        print("╰", "─" * (width + 2), "╯", sep="")
 
     @staticmethod
     def print_leveled(root: Optional[TreeNode], data_attr_name: str = "val"):
