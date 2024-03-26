@@ -21,9 +21,7 @@ class BinaryTree:
 
     @staticmethod
     def count_leaf_nodes(root: Optional[TreeNode]) -> int:
-        """
-        Returns the number of leaf nodes in the given binary tree.
-        """
+        """Returns the number of leaf nodes in the given binary tree."""
 
         assert not BinaryTree.is_cyclic(
             root
@@ -359,9 +357,7 @@ class BinaryTree:
 
     @staticmethod
     def print_structure(root: Optional[TreeNode]):
-        """
-        Print the shape of the given rooted binary tree to the terminal.
-        """
+        """Print the shape of the given rooted binary tree to the terminal."""
         TR_root = TR_create_drawing(root)
 
         # Find the minimum and maximum x and y coordinates (grid bounds)

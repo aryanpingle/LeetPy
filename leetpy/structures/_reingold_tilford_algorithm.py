@@ -16,9 +16,7 @@ MINIMUM_SEPARATION = 3
 
 
 class TR_Node:
-    """
-    A node class to represent the nodes of the binary tree.
-    """
+    """A node class to represent the nodes of the binary tree."""
 
     def __init__(self, val: any = 0):
         self.val: any = val
@@ -31,9 +29,7 @@ class TR_Node:
 
 
 class TR_Extreme:
-    """
-    A node class to represent the leftmost and rightmost nodes of a subtree.
-    """
+    """A node class to represent the leftmost and rightmost nodes of a subtree."""
 
     def __init__(self):
         self.node: Optional[TR_Node] = None
