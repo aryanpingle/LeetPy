@@ -1,7 +1,7 @@
 from collections import deque
 import json
 import random
-from typing import Deque, List, Optional
+from typing import Deque, Iterator, List, Optional, Set
 from rich import print as rich_print
 
 from ..types import TreeNode
@@ -22,10 +22,15 @@ class BinaryTree:
         """
         Returns the number of leaf nodes in the given binary tree.
         """
+
+        assert not BinaryTree.is_cyclic(
+            root
+        ), "Cycle detected while traveling from the root"
+
         count = [0]
 
         def util(root):
-            if root == None:
+            if root is None:
                 return
             if root.left or root.right:
                 util(root.left)
@@ -38,11 +43,16 @@ class BinaryTree:
 
     @staticmethod
     def count_nodes(root: Optional[TreeNode]) -> int:
-        if root == None:
-            return 0
-        return (
-            1 + BinaryTree.count_nodes(root.left) + BinaryTree.count_nodes(root.right)
-        )
+        assert not BinaryTree.is_cyclic(
+            root
+        ), "Cycle detected while traveling from the root"
+
+        def _count_nodes(root: Optional[TreeNode]):
+            if root is None:
+                return 0
+            return 1 + _count_nodes(root.left) + _count_nodes(root.right)
+
+        return _count_nodes(root)
 
     @staticmethod
     def create(
@@ -233,7 +243,7 @@ class BinaryTree:
         internal_node_index = [0]
 
         def travel(node: Optional[TreeNode], is_left_child: bool, parent_idx: int):
-            if node == None:
+            if node is None:
                 return
 
             if node.left or node.right:
@@ -295,7 +305,12 @@ class BinaryTree:
         Returns the maximum depth/height of the given binary tree. For a single root node,
         the depth is 1.
         """
-        if root == None:
+
+        assert not BinaryTree.is_cyclic(
+            root
+        ), "Cycle detected while traveling from the root"
+
+        if root is None:
             return 0
         return 1 + max(
             BinaryTree.get_depth(root.left), BinaryTree.get_depth(root.right)
@@ -308,8 +323,12 @@ class BinaryTree:
         data structure.
         """
 
+        assert not BinaryTree.is_cyclic(
+            root
+        ), "Cycle detected while traveling from the root"
+
         def util(root, min_val, max_val) -> bool:
-            if root == None:
+            if root is None:
                 return True
             if root.val >= max_val or root.val <= min_val:
                 return False
@@ -318,6 +337,23 @@ class BinaryTree:
             )
 
         return util(root, -float("inf"), float("inf"))
+
+    @staticmethod
+    def is_cyclic(root: Optional[TreeNode]) -> bool:
+        """
+        Check whether the graph formed from the given root contains a cyclic reference.
+
+        Useful for verifying whether the given root actually forms a binary tree or not.
+        """
+
+        visited: Set[TreeNode] = set()
+
+        for node in BinaryTree.travel_inorder(root):
+            if node in visited:
+                return True
+            visited.add(node)
+
+        return False
 
     @staticmethod
     def print_leveled(root: Optional[TreeNode], data_attr_name: str = "val"):
@@ -332,6 +368,11 @@ class BinaryTree:
             data_attr_name: The name of the attribute storing the node's data. Useful in
                 situations where you pass a custom node definition.
         """
+
+        assert not BinaryTree.is_cyclic(
+            root
+        ), "Cycle detected while traveling from the root"
+
         def _print__leveled(root: Optional[TreeNode], level: int):
             if root is None:
                 return
@@ -348,6 +389,7 @@ class BinaryTree:
                 _print__leveled(root.right, level + 1)
             else:
                 rich_print(indent_string, "  ", "[italic]~ no right node[/]", sep="")
+
         _print__leveled(root, 0)
 
     @staticmethod
@@ -362,7 +404,7 @@ class BinaryTree:
         return None
 
     @staticmethod
-    def travel_inorder(root: Optional[TreeNode]):
+    def travel_inorder(root: Optional[TreeNode]) -> Iterator[TreeNode]:
         """
         Generator function that yields nodes in an inorder traversal (left -> root ->
         right).
@@ -373,7 +415,7 @@ class BinaryTree:
             yield from BinaryTree.travel_inorder(root.right)
 
     @staticmethod
-    def travel_levelorder(root: Optional[TreeNode]):
+    def travel_levelorder(root: Optional[TreeNode]) -> Iterator[TreeNode]:
         """
         Generator function that yields nodes in a levelorder traversal (left to right for
         each level in the binary tree).
@@ -388,7 +430,7 @@ class BinaryTree:
                 q.append(curr.right)
 
     @staticmethod
-    def travel_postorder(root: Optional[TreeNode]):
+    def travel_postorder(root: Optional[TreeNode]) -> Iterator[TreeNode]:
         """
         Generator function that yields nodes in a postorder traversal (left -> right ->
         root).
@@ -399,7 +441,7 @@ class BinaryTree:
             yield root
 
     @staticmethod
-    def travel_preorder(root: Optional[TreeNode]):
+    def travel_preorder(root: Optional[TreeNode]) -> Iterator[TreeNode]:
         """
         Generator function that yields nodes in an preorder traversal (root -> left ->
         right).
