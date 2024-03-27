@@ -86,7 +86,14 @@ def TR_setup(
 
             while L is not None and R is not None:
                 if CURSEP < MINIMUM_SEPARATION:
-                    ROOTSEP = ROOTSEP + (MINIMUM_SEPARATION - CURSEP)
+                    # ROOTSEP = ROOTSEP + (MINIMUM_SEPARATION - CURSEP)
+                    # CURSEP = MINIMUM_SEPARATION
+
+                    # To account for an off-by-one error, I have modified the lines above
+                    correction = MINIMUM_SEPARATION - CURSEP
+                    if correction % 2 == 1:
+                        correction += 1
+                    ROOTSEP = ROOTSEP + correction
                     CURSEP = MINIMUM_SEPARATION
 
                 # Advance L & R
