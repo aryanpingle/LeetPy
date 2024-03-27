@@ -85,6 +85,72 @@ class LinkedList:
         return sentinel.next
 
     @staticmethod
+    def export_as_function(
+        head: Optional[ListNode],
+        indent: int = 4,
+        function_name: str = "get_head",
+        node_alias: str = "ListNode",
+        type_hints: bool = True,
+    ) -> str:
+        """
+        Generate code for a Python3 function that returns the head of the given linked
+        list.
+
+        Args:
+            head: The head of a linked list.
+            indent: The number of spaces to be used while indenting the function body.
+            function_name: The name of the function in the generated code. (default =
+                "get_head")
+            node_alias: The name of the class used to create a node for the linked list.
+                (default = "ListNode")
+            type_hints: When enabled, the function code will have a Python3 return type
+                declaration for the given node_alias. (example: `-> Optional[ListNode]`)
+        """
+
+        code__return_type = f" -> Optional[{node_alias}]" if type_hints else ""
+        code__func_signature = f"def {function_name}(){code__return_type}:"
+
+        if head is None:
+            return "\n".join([code__func_signature, " " * indent + "return None"])
+
+        def get_node_repr(node: Optional[ListNode]) -> str:
+            if node is None:
+                return "None"
+            return f"{node_alias}({node.val})"
+
+        N = LinkedList.count_nodes(head)
+
+        code__func_body = []
+
+        # Create the first node (index 0)
+        code__func_body.append(f"node_0 = {get_node_repr(head)}")
+
+        node_to_index = {head: 0}
+        for i in range(1, N):
+            head = head.next
+            # Create the new node
+            code__func_body.append(f"node_{i} = {get_node_repr(head)}")
+            node_to_index[head] = i
+            # Justify its existence
+            code__func_body.append(f"node_{i-1}.next = node_{i}")
+
+        # head is now the last node
+
+        # Create the cyclic reference, if any
+        if LinkedList.is_cyclic(head):
+            code__func_body.append(f"# cyclic dependency")
+            code__func_body.append(f"node_{N-1}.next = node_{node_to_index[head.next]}")
+
+        code__func_body.append("return node_0")  # Return statement
+
+        return "\n".join(
+            [
+                code__func_signature,
+                *[" " * indent + line for line in code__func_body],
+            ]
+        )
+
+    @staticmethod
     def get(head: Optional[ListNode], n: int) -> Optional[ListNode]:
         """
         Get the n'th node in the given linked list (0-based indexing). Negative indices
@@ -165,7 +231,7 @@ class LinkedList:
         for _ in range(N):
             if head.val == value:
                 return True
-        
+
         return False
 
     @staticmethod
