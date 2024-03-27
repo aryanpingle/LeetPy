@@ -42,6 +42,18 @@ class LinkedList:
         index_as_val: bool = False,
         choices: Iterable[any] = [],
     ) -> Optional[ListNode]:
+        """
+        Create a linked list based on the given parameters.
+
+        Args:
+            n: The number of nodes to be generated as part of the linked list.
+            min_val: The minimum possible value of any randomly generated node value.
+            max_val: The maximum possible value of any randomly generated node value.
+            index_as_val: Enabling this sets node values to the 0-based order in which
+                they were created. Overrides `min_val` and `max_val`.
+            choices: A list of possible node values to be randomly chosen from.
+        """
+
         sentinel = ListNode(-1)
         tail = sentinel
         for i in range(n):
@@ -60,30 +72,17 @@ class LinkedList:
         return sentinel.next
 
     @staticmethod
-    def print(head: Optional[ListNode]):
-        """
-        Print the linked list to stdout in a visually appealing format.
+    def create_from_array(array: Iterable[any]) -> Optional[ListNode]:
+        """Create a linked list where every node contains an element of the array."""
 
-        NOTE: Cyclic references do not cause a problem.
-        """
+        sentinel = ListNode(-1)
 
-        cycle_start_node = LinkedList.get_cyclic_node(head)
+        head = sentinel
+        for value in array:
+            head.next = ListNode(value)
+            head = head.next
 
-        seen: Set[LinkedList] = set()
-        for node in LinkedList.travel(head):
-            if node is None:
-                break
-            if node in seen:
-                rich_print(f"[cyan]↺[/]", end=" ")
-                break
-            seen.add(node)
-
-            if node is cycle_start_node:
-                rich_print("[cyan]↺ →[/]", end=" ")
-            print(node.val, end=" ")
-            if node.next is not None:
-                rich_print("[cyan]→[/]", end=" ")
-        print()
+        return sentinel.next
 
     @staticmethod
     def get(head: Optional[ListNode], n: int) -> Optional[ListNode]:
@@ -119,12 +118,38 @@ class LinkedList:
         if head == None:
             return None
         N = LinkedList.count_nodes(head)
-        return LinkedList.get(head, N-1).next
+        return LinkedList.get(head, N - 1).next
 
     @staticmethod
     def is_cyclic(head: Optional[ListNode]) -> Optional[ListNode]:
         """Check whether there is a cyclic reference somewhere in the linked list."""
-        return LinkedList.get_cyclic_node(head) is None
+        return LinkedList.get_cyclic_node(head) is not None
+
+    @staticmethod
+    def print(head: Optional[ListNode]):
+        """
+        Print the linked list to stdout in a visually appealing format.
+
+        NOTE: Cyclic references do not cause a problem.
+        """
+
+        cycle_start_node = LinkedList.get_cyclic_node(head)
+
+        seen: Set[LinkedList] = set()
+        for node in LinkedList.travel(head):
+            if node is None:
+                break
+            if node in seen:
+                rich_print(f"[cyan]↺[/]", end=" ")
+                break
+            seen.add(node)
+
+            if node is cycle_start_node:
+                rich_print("[cyan]↺ →[/]", end=" ")
+            print(node.val, end=" ")
+            if node.next is not None:
+                rich_print("[cyan]→[/]", end=" ")
+        print()
 
     @staticmethod
     def search(head: Optional[ListNode], value: any) -> Optional[ListNode]:
@@ -135,14 +160,30 @@ class LinkedList:
         NOTE: Cyclic references do not cause a problem.
         """
 
-        seen: Set[ListNode] = set()
-        for node in LinkedList.travel(head):
-            if node in seen:
-                break
-            seen.add(node)
-            if node.val == value:
+        N = LinkedList.count_nodes(head)
+
+        for _ in range(N):
+            if head.val == value:
                 return True
+        
         return False
+
+    @staticmethod
+    def to_array(head: Optional[ListNode]) -> List[ListNode]:
+        """
+        Return a list of unique nodes in the linked list.
+
+        NOTE: Cyclic references do not cause a problem.
+        """
+
+        N = LinkedList.count_nodes(head)
+        array = [None] * N
+
+        for i in range(N):
+            array[i] = head
+            head = head.next
+
+        return array
 
     @staticmethod
     def travel(head: Optional[ListNode]) -> Iterator[ListNode]:
@@ -152,7 +193,6 @@ class LinkedList:
         NOTE: if a cycle exists, the iterator will keep yielding nodes infinitely.
         """
 
-        if head is None:
-            return
-        yield head
-        yield from LinkedList.travel(head.next)
+        while head is not None:
+            yield head
+            head = head.next
