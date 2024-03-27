@@ -1,7 +1,5 @@
-from collections import deque
-import json
 import random
-from typing import Deque, Dict, Iterable, Iterator, List, Optional, Set
+from typing import Iterable, Iterator, List, Optional, Set
 from rich import print as rich_print
 
 from ..types import ListNode
