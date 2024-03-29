@@ -9,8 +9,6 @@ Further Reading: https://llimllib.github.io/pymag-trees/
 
 from typing import Optional
 
-from leetpy.types import TreeNode
-
 
 MINIMUM_SEPARATION = 3
 
@@ -176,28 +174,38 @@ def TR_petrify(T: Optional[TR_Node], XPOS: int):
     TR_petrify(T.right, XPOS + T.offset)
 
 
-def _TR_create_tree_copy(root: Optional[TreeNode]) -> Optional[TR_Node]:
+def _TR_create_tree_copy(
+    root: Optional[object], data_attr: str, left_attr: str, right_attr: str
+) -> Optional[TR_Node]:
     """
-    Create a deep copy of the given binary tree root, where every node object is replaced
+    Create a deep copy of the given tree root, where every node object is replaced
     by its `TR_Node` counterpart.
     """
     if root is None:
         return None
 
-    TR_root = TR_Node(root.val)
-    TR_root.left = _TR_create_tree_copy(root.left)
-    TR_root.right = _TR_create_tree_copy(root.right)
+    TR_root = TR_Node(getattr(root, data_attr))
+    TR_root.left = _TR_create_tree_copy(
+        getattr(root, left_attr), data_attr, left_attr, right_attr
+    )
+    TR_root.right = _TR_create_tree_copy(
+        getattr(root, right_attr), data_attr, left_attr, right_attr
+    )
     return TR_root
 
 
 def TR_create_drawing(
-    root: Optional[TreeNode], minimum_separation: int = 3
+    root: Optional[object],
+    data_attr: str,
+    left_attr: str,
+    right_attr: str,
+    minimum_separation: int = 3,
 ) -> Optional[TR_Node]:
     """
-    Create a copy of the given binary tree with coordinates for each node on a 2-D plane.
+    Create a deep copy of the given tree root with coordinates for each node on a 2-D plane.
     """
 
-    TR_root = _TR_create_tree_copy(root)
+    TR_root = _TR_create_tree_copy(root, data_attr, left_attr, right_attr)
     TR_setup(TR_root, 0, TR_Extreme(), TR_Extreme(), minimum_separation)
     TR_petrify(TR_root, 0)
     return TR_root

@@ -2,11 +2,19 @@ import random
 from typing import Iterable, Iterator, List, Optional, Set
 from rich import print as rich_print
 
-from ..types import ListNode
-
 
 INT_MIN = -2147483648
 INT_MAX = 2147483647
+
+
+# References:
+# https://leetcode.com/problems/add-two-numbers/
+class ListNode:
+    """A basic definition of a singly linked list's node."""
+
+    def __init__(self, val: any = 0, next: Optional["ListNode"] = None):
+        self.val = val
+        self.next = next
 
 
 class LinkedList:

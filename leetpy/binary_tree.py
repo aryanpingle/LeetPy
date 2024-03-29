@@ -6,11 +6,25 @@ from rich import print as rich_print
 
 from ._reingold_tilford_algorithm import TR_create_drawing, TR_Node
 
-from ..types import TreeNode
-
 
 INT_MIN = -2147483648
 INT_MAX = 2147483647
+
+
+# References:
+# https://leetcode.com/problems/binary-tree-inorder-traversal/
+class TreeNode:
+    """A basic definition of a binary tree's node."""
+
+    def __init__(
+        self,
+        val: any = 0,
+        left: Optional["TreeNode"] = None,
+        right: Optional["TreeNode"] = None,
+    ):
+        self.val = val
+        self.left = left
+        self.right = right
 
 
 class BinaryTree:
@@ -356,9 +370,14 @@ class BinaryTree:
         return False
 
     @staticmethod
-    def print_structure(root: Optional[TreeNode]):
+    def print_structure(
+        root: Optional[TreeNode],
+        data_attr: str = "val",
+        left_attr: str = "left",
+        right_attr: str = "right",
+    ):
         """Print the shape of the given rooted binary tree to the terminal."""
-        TR_root = TR_create_drawing(root)
+        TR_root = TR_create_drawing(root, data_attr, left_attr, right_attr)
 
         # Find the minimum and maximum x and y coordinates (grid bounds)
         x_bounds = [0, 0]
