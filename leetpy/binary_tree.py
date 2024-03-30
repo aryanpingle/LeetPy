@@ -1,7 +1,7 @@
 from collections import deque
 import json
 import random
-from typing import Deque, Iterator, List, Optional, Set
+from typing import Deque, Iterator, List, Optional, Set, TypedDict, TypeVar
 from rich import print as rich_print
 
 from ._reingold_tilford_algorithm import TR_create_drawing, TR_Node
@@ -9,6 +9,14 @@ from ._reingold_tilford_algorithm import TR_create_drawing, TR_Node
 
 INT_MIN = -2147483648
 INT_MAX = 2147483647
+
+
+# Generic type for any object that represents a node in a binary tree
+NodeLike = TypeVar("NodeLike")
+"""
+A generic type for any object that represents a node in a binary tree. It will have three
+unique attributes: for its data, for its left child and for its right child.
+"""
 
 
 # References:
@@ -25,6 +33,27 @@ class TreeNode:
         self.val = val
         self.left = left
         self.right = right
+
+
+class NodeConfig(TypedDict):
+    """
+    A 1:1 mapping of the three attributes of a binary tree node to the corresponding
+    attribute names in a custom node object.
+    """
+
+    data_attr: str
+    left_attr: str
+    right_attr: str
+
+
+TreeNodeConfig: NodeConfig = {
+    "data_attr": "val",
+    "left_attr": "left",
+    "right_attr": "right",
+}
+"""
+The default node configuration, which represents an instance of `TreeNode`.
+"""
 
 
 class BinaryTree:
@@ -370,14 +399,19 @@ class BinaryTree:
         return False
 
     @staticmethod
-    def print_structure(
-        root: Optional[TreeNode],
-        data_attr: str = "val",
-        left_attr: str = "left",
-        right_attr: str = "right",
-    ):
-        """Print the shape of the given rooted binary tree to the terminal."""
-        TR_root = TR_create_drawing(root, data_attr, left_attr, right_attr)
+    def print_structure(root: Optional[TreeNode], config: NodeConfig = TreeNodeConfig):
+        """
+        Print the shape of the given rooted binary tree to the terminal.
+
+        Args:
+            config: A dictionary that maps the three attributes of `TreeNode` to the
+                corresponding attribute names in `root`. This is only needed if `root` is
+                not an instance of `TreeNode`.
+        """
+
+        TR_root = TR_create_drawing(
+            root, config["data_attr"], config["left_attr"], config["right_attr"]
+        )
 
         # Find the minimum and maximum x and y coordinates (grid bounds)
         x_bounds = [0, 0]
@@ -516,49 +550,93 @@ class BinaryTree:
         return None
 
     @staticmethod
-    def travel_inorder(root: Optional[TreeNode]) -> Iterator[TreeNode]:
+    def travel_inorder(
+        root: Optional[NodeLike], config: NodeConfig = TreeNodeConfig
+    ) -> Iterator[NodeLike]:
         """
         Generator function that yields nodes in an inorder traversal (left -> root ->
         right).
+
+        Args:
+            config: A dictionary that maps the three attributes of `TreeNode` to the
+                corresponding attribute names in `root`. This is only needed if `root` is
+                not an instance of `TreeNode`.
         """
         if root is not None:
-            yield from BinaryTree.travel_inorder(root.left)
+            yield from BinaryTree.travel_inorder(
+                getattr(root, config["left_attr"]), config
+            )
             yield root
-            yield from BinaryTree.travel_inorder(root.right)
+            yield from BinaryTree.travel_inorder(
+                getattr(root, config["right_attr"]), config
+            )
 
     @staticmethod
-    def travel_levelorder(root: Optional[TreeNode]) -> Iterator[TreeNode]:
+    def travel_levelorder(
+        root: Optional[NodeLike], config: NodeConfig = TreeNodeConfig
+    ) -> Iterator[NodeLike]:
         """
         Generator function that yields nodes in a levelorder traversal (left to right for
         each level in the binary tree).
+
+        Args:
+            config: A dictionary that maps the three attributes of `TreeNode` to the
+                corresponding attribute names in `root`. This is only needed if `root` is
+                not an instance of `TreeNode`.
         """
         q = deque([root])
         while q:
             curr = q.popleft()
+
             yield curr
-            if curr.left:
-                q.append(curr.left)
-            if curr.right:
-                q.append(curr.right)
+
+            left_child = getattr(root, config["left_attr"])
+            if left_child:
+                q.append(left_child)
+            right_child = getattr(root, config["right_attr"])
+            if right_child:
+                q.append(right_child)
 
     @staticmethod
-    def travel_postorder(root: Optional[TreeNode]) -> Iterator[TreeNode]:
+    def travel_postorder(
+        root: Optional[NodeLike], config: NodeConfig = TreeNodeConfig
+    ) -> Iterator[NodeLike]:
         """
         Generator function that yields nodes in a postorder traversal (left -> right ->
         root).
+
+        Args:
+            config: A dictionary that maps the three attributes of `TreeNode` to the
+                corresponding attribute names in `root`. This is only needed if `root` is
+                not an instance of `TreeNode`.
         """
         if root is not None:
-            yield from BinaryTree.travel_postorder(root.left)
-            yield from BinaryTree.travel_postorder(root.right)
+            yield from BinaryTree.travel_postorder(
+                getattr(root, config["left_attr"]), config
+            )
+            yield from BinaryTree.travel_postorder(
+                getattr(root, config["right_attr"]), config
+            )
             yield root
 
     @staticmethod
-    def travel_preorder(root: Optional[TreeNode]) -> Iterator[TreeNode]:
+    def travel_preorder(
+        root: Optional[NodeLike], config: NodeConfig = TreeNodeConfig
+    ) -> Iterator[NodeLike]:
         """
         Generator function that yields nodes in an preorder traversal (root -> left ->
         right).
+
+        Args:
+            config: A dictionary that maps the three attributes of `TreeNode` to the
+                corresponding attribute names in `root`. This is only needed if `root` is
+                not an instance of `TreeNode`.
         """
         if root is not None:
             yield root
-            yield from BinaryTree.travel_preorder(root.left)
-            yield from BinaryTree.travel_preorder(root.right)
+            yield from BinaryTree.travel_preorder(
+                getattr(root, config["left_attr"]), config
+            )
+            yield from BinaryTree.travel_preorder(
+                getattr(root, config["right_attr"]), config
+            )
