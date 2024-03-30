@@ -11,6 +11,20 @@ If you solve problems related to Data Structures & Algorithms (DSA), you know ho
 - **Save & Export**: Serialization and export functions help you save an exact copy of your structure, and give you the code to generate them from scratch.
 - **Flexibility**: Create your data structure *however* you want; **`LeetPy`**'s algorithms will always work correctly.
 
+## Installation
+
+To install the latest stable release, run:
+
+```bash
+$ pip install leetpy
+```
+
+To install from the latest GitHub commit:
+
+```bash
+pip install git+https://github.com/aryanpingle/leetpy
+```
+
 ## Usage & Examples
 
 Consider debugging the Binary Tree data structure:
@@ -47,17 +61,3 @@ BinaryTree.print_structure(root)
 ```
 
 **`LeetPy`** offers a wide range of utility functions - for a wide range of data structures.
-
-## Installation
-
-To install the latest stable release, run:
-
-```bash
-$ pip install leetpy
-```
-
-To install from the latest GitHub commit:
-
-```bash
-pip install git+https://github.com/aryanpingle/leetpy
-```
