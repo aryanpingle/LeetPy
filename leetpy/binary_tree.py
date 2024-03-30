@@ -56,6 +56,10 @@ The default node configuration, which represents an instance of `TreeNode`.
 """
 
 
+def _indented(s: str, spaces: int):
+    return " " * spaces + s
+
+
 class BinaryTree:
     """
     Algorithms and utility functions related to the Binary Tree data structure. All
@@ -63,37 +67,48 @@ class BinaryTree:
     """
 
     @staticmethod
-    def count_leaf_nodes(root: Optional[TreeNode]) -> int:
+    def count_leaf_nodes(
+        root: Optional[TreeNode], config: NodeConfig = TreeNodeConfig
+    ) -> int:
         """Returns the number of leaf nodes in the given binary tree."""
 
         assert not BinaryTree.is_cyclic(
-            root
+            root, config
         ), "Cycle detected while traveling from the root"
 
         count = [0]
 
-        def util(root):
+        def _count_leaf_nodes(root):
             if root is None:
                 return
-            if root.left or root.right:
-                util(root.left)
-                util(root.right)
+            if getattr(root, config["left_attr"]) or getattr(
+                root, config["right_attr"]
+            ):
+                _count_leaf_nodes(getattr(root, config["left_attr"]))
+                _count_leaf_nodes(getattr(root, config["right_attr"]))
             else:
                 count[0] += 1
 
-        util(root)
+        _count_leaf_nodes(root)
         return count[0]
 
     @staticmethod
-    def count_nodes(root: Optional[TreeNode]) -> int:
+    def count_nodes(
+        root: Optional[NodeLike], config: NodeConfig = TreeNodeConfig
+    ) -> int:
         assert not BinaryTree.is_cyclic(
-            root
+            root, config
         ), "Cycle detected while traveling from the root"
 
-        def _count_nodes(root: Optional[TreeNode]):
+        def _count_nodes(root: Optional[NodeLike]):
             if root is None:
                 return 0
-            return 1 + _count_nodes(root.left) + _count_nodes(root.right)
+
+            return (
+                1
+                + _count_nodes(getattr(root, config["left_attr"]))
+                + _count_nodes(getattr(root, config["right_attr"]))
+            )
 
         return _count_nodes(root)
 
@@ -222,12 +237,19 @@ class BinaryTree:
         return root
 
     @staticmethod
-    def export_as_leetcode_array(root: Optional[TreeNode]) -> str:
+    def export_as_leetcode_array(
+        root: Optional[NodeLike], config: NodeConfig = TreeNodeConfig
+    ) -> str:
         """
         Generate a representation of the given rooted binary tree in Leetcode's testcase
         format.
 
         This representation can be directly pasted into a Leetcode custom testcase.
+
+        Args:
+            config: A dictionary that maps the three attributes of `TreeNode` to the
+                corresponding attribute names in `root`. This is only needed if `root` is
+                not an instance of `TreeNode`.
         """
         arr = []
         q = deque([root])
@@ -238,9 +260,9 @@ class BinaryTree:
                 arr.append("null")
                 continue
 
-            arr.append(str(curr.val))
-            q.append(curr.left)
-            q.append(curr.right)
+            arr.append(str(getattr(curr, config["data_attr"])))
+            q.append(getattr(curr, config["left_attr"]))
+            q.append(getattr(curr, config["right_attr"]))
 
         # Get rid of redundant "null" nodes
         while arr and arr[-1] == "null":
@@ -251,6 +273,8 @@ class BinaryTree:
     @staticmethod
     def export_as_function(
         root: Optional[TreeNode],
+        source_config: NodeConfig = TreeNodeConfig,
+        target_config: NodeConfig = TreeNodeConfig,
         indent: int = 4,
         function_name: str = "get_root",
         node_alias: str = "TreeNode",
@@ -269,129 +293,143 @@ class BinaryTree:
                 (default = "TreeNode")
             type_hints: When enabled, the function code will have a Python3 return type
                 declaration for the given node_alias. (example: `-> Optional[TreeNode]`)
+            config: A dictionary that maps the three attributes of `TreeNode` to the
+                corresponding attribute names in `root`. This is only needed if `root` is
+                not an instance of `TreeNode`.
         """
         code__return_type = f" -> Optional[{node_alias}]" if type_hints else ""
-        code__func_signature = f"def {function_name}(){code__return_type}:"
+        code = f"def {function_name}(){code__return_type}:"
 
         if root is None:
-            return "\n".join([code__func_signature, " " * indent + "return None"])
+            # (in code) return None
+            code += "\n" + _indented("return None", indent)
+            return code
 
-        def get_node_repr(node: Optional[TreeNode]) -> str:
+        def get_node_repr(node: Optional[NodeLike]) -> str:
             if node is None:
                 return "None"
-            return f"{node_alias}({node.val})"
+            data = getattr(node, source_config["data_attr"])
+            return f"{node_alias}({data})"
 
-        code__setter_lines = []
-        internal_node_reprs: List[str] = []
-        internal_node_index = [0]
+        N_ptr = [BinaryTree.count_nodes(root, source_config) - 1]
 
-        def travel(node: Optional[TreeNode], is_left_child: bool, parent_idx: int):
+        def travel(node: Optional[NodeLike], code_lines: List[str]) -> str:
+            """
+            Append this node's definition to `code_lines` and return this node's variable
+            name.
+            """
             if node is None:
-                return
+                return "None"
 
-            if node.left or node.right:
-                # Internal node
-                curr_index = internal_node_index[0]
-                internal_node_index[0] += 1
+            left_var = travel(getattr(node, source_config["left_attr"]), code_lines)
+            right_var = travel(getattr(node, source_config["right_attr"]), code_lines)
 
-                if parent_idx != -1:
-                    setter_line = (
-                        f"nodes[{parent_idx}]."
-                        + ("left" if is_left_child else "right")
-                        + " = "
-                        + f"nodes[{curr_index}]"
-                    )
-                    code__setter_lines.append(setter_line)
+            node_var = f"node_{N_ptr[0]}"
+            N_ptr[0] -= 1
 
-                # Add its repr to be declared in the array
-                internal_node_reprs.append(get_node_repr(node))
+            # Define this node
+            code_lines.append(_indented(f"{node_var} = {get_node_repr(node)}", indent))
+            # Define children
+            if left_var != "None":
+                code_lines.append(_indented(
+                    f"{node_var}.{target_config['left_attr']} = {left_var}", indent
+                ))
+            if right_var != "None":
+                code_lines.append(_indented(
+                    f"{node_var}.{target_config['right_attr']} = {right_var}", indent
+                ))
 
-                travel(node.left, True, curr_index)
-                travel(node.right, False, curr_index)
+            return node_var
 
-                return
+        code_lines = []
+        root_var = travel(root, code_lines)
+        code += "\n" + "\n".join(code_lines)
+        code += "\n" + _indented(f"return {root_var}", indent)
 
-            # Leaf node
-            if parent_idx != -1:
-                setter_line = (
-                    f"nodes[{parent_idx}]."
-                    + ("left" if is_left_child else "right")
-                    + " = "
-                    + get_node_repr(node)
-                )
-                code__setter_lines.append(setter_line)
-
-        travel(root, False, -1)
-
-        # statement to declare array of nodes
-        code__declare_array = "nodes = [" + ", ".join(internal_node_reprs) + "]"
-        # statement to return nodes[0] (the root)
-        code__return_statement = "return nodes[0]"
-
-        # unindented function body lines
-        function_body_lines = [
-            code__declare_array,
-            *code__setter_lines,
-            code__return_statement,
-        ]
-
-        return "\n".join(
-            [
-                code__func_signature,
-                *[" " * indent + line for line in function_body_lines],
-            ]
-        )
+        return code
 
     @staticmethod
-    def get_depth(root: Optional[TreeNode]) -> int:
+    def get_depth(root: Optional[NodeLike], config: NodeConfig = TreeNodeConfig) -> int:
         """
         Returns the maximum depth/height of the given binary tree. For a single root node,
         the depth is 1.
+
+        Args:
+            config: A dictionary that maps the three attributes of `TreeNode` to the
+                corresponding attribute names in `root`. This is only needed if `root` is
+                not an instance of `TreeNode`.
         """
 
         assert not BinaryTree.is_cyclic(
-            root
+            root, config
         ), "Cycle detected while traveling from the root"
 
         if root is None:
             return 0
         return 1 + max(
-            BinaryTree.get_depth(root.left), BinaryTree.get_depth(root.right)
+            BinaryTree.get_depth(getattr(root, config["left_attr"]), config),
+            BinaryTree.get_depth(getattr(root, config["right_attr"]), config),
         )
 
     @staticmethod
-    def is_binary_search_tree(root: Optional[TreeNode]) -> bool:
+    def is_binary_search_tree(
+        root: Optional[NodeLike], config: NodeConfig = TreeNodeConfig
+    ) -> bool:
         """
         Check if the given Binary Tree satisfies the properties of the Binary Search Tree
         data structure.
+
+        Args:
+            config: A dictionary that maps the three attributes of `TreeNode` to the
+                corresponding attribute names in `root`. This is only needed if `root` is
+                not an instance of `TreeNode`.
         """
 
         assert not BinaryTree.is_cyclic(
-            root
+            root, config
         ), "Cycle detected while traveling from the root"
 
-        def util(root, min_val, max_val) -> bool:
+        def util(root: Optional[NodeLike], min_val: any, max_val: any) -> bool:
             if root is None:
                 return True
-            if root.val >= max_val or root.val <= min_val:
+
+            root_data = getattr(root, config["data_attr"])
+
+            if root_data >= max_val or root_data <= min_val:
                 return False
-            return util(root.left, min_val, root.val) and util(
-                root.right, root.val, max_val
+
+            left_is_bst = util(
+                getattr(root, config["left_attr"]),
+                min_val,
+                root_data,
             )
+            right_is_bst = util(
+                getattr(root, config["right_attr"]),
+                root_data,
+                max_val,
+            )
+            return left_is_bst and right_is_bst
 
         return util(root, -float("inf"), float("inf"))
 
     @staticmethod
-    def is_cyclic(root: Optional[TreeNode]) -> bool:
+    def is_cyclic(
+        root: Optional[NodeLike], config: NodeConfig = TreeNodeConfig
+    ) -> bool:
         """
         Check whether the graph formed from the given root contains a cyclic reference.
 
         Useful for verifying whether the given root actually forms a binary tree or not.
+
+        Args:
+            config: A dictionary that maps the three attributes of `TreeNode` to the
+                corresponding attribute names in `root`. This is only needed if `root` is
+                not an instance of `TreeNode`.
         """
 
-        visited: Set[TreeNode] = set()
+        visited: Set[NodeLike] = set()
 
-        for node in BinaryTree.travel_inorder(root):
+        for node in BinaryTree.travel_inorder(root, config):
             if node in visited:
                 return True
             visited.add(node)
@@ -502,7 +540,7 @@ class BinaryTree:
         print("╰", "─" * (width + 2), "╯", sep="")
 
     @staticmethod
-    def print_leveled(root: Optional[TreeNode], data_attr_name: str = "val"):
+    def print_leveled(root: Optional[NodeLike], config: NodeConfig = TreeNodeConfig):
         """
         Print an indented representation of a binary tree.
 
@@ -511,41 +549,51 @@ class BinaryTree:
         readable, and can thus be trusted to always give the correct output.
 
         Args:
-            data_attr_name: The name of the attribute storing the node's data. Useful in
-                situations where you pass a custom node definition.
+            config: A dictionary that maps the three attributes of `TreeNode` to the
+                corresponding attribute names in `root`. This is only needed if `root` is
+                not an instance of `TreeNode`.
         """
 
         assert not BinaryTree.is_cyclic(
             root
         ), "Cycle detected while traveling from the root"
 
-        def _print__leveled(root: Optional[TreeNode], level: int):
+        def _print__leveled(root: Optional[NodeLike], level: int):
             if root is None:
                 return
 
             indent_string = " " * (2 * level)
-            print(indent_string, f"{getattr(root, data_attr_name)}", sep="")
+            print(indent_string, getattr(root, config["data_attr"]), sep="")
 
-            if root.left:
-                _print__leveled(root.left, level + 1)
+            left_child = getattr(root, config["left_attr"])
+            if left_child:
+                _print__leveled(left_child, level + 1)
             else:
                 rich_print(indent_string, "  ", "[italic]~ no left node[/]", sep="")
 
-            if root.right:
-                _print__leveled(root.right, level + 1)
+            right_child = getattr(root, config["right_attr"])
+            if right_child:
+                _print__leveled(right_child, level + 1)
             else:
                 rich_print(indent_string, "  ", "[italic]~ no right node[/]", sep="")
 
         _print__leveled(root, 0)
 
     @staticmethod
-    def search(root: Optional[TreeNode], val: any) -> Optional[TreeNode]:
+    def search(
+        root: Optional[NodeLike], val: any, config: NodeConfig = TreeNodeConfig
+    ) -> Optional[NodeLike]:
         """
         Searches nodes in a binary tree for the given value in an inorder traversal.
         Returns the first node that contains the given value, or `None` if not found.
+
+        Args:
+            config: A dictionary that maps the three attributes of `TreeNode` to the
+                corresponding attribute names in `root`. This is only needed if `root` is
+                not an instance of `TreeNode`.
         """
-        for node in BinaryTree.travel_inorder(root):
-            if node.val == val:
+        for node in BinaryTree.travel_inorder(root, config):
+            if getattr(root, config["data_attr"]) == val:
                 return node
         return None
 
