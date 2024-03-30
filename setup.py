@@ -28,7 +28,7 @@ if os.path.isdir(egg_dir):
 setup(
     name="leetpy",
     version=version,
-    description="A package that shows you the correct solutions for every question, gives you a suite of testcases, and lets you build your own.",
+    description="You should solve DSA problems efficiently.",
     packages=["leetpy", *["leetpy." + i for i in find_packages(where="leetpy")]],
     long_description=long_description,
     long_description_content_type="text/markdown",
