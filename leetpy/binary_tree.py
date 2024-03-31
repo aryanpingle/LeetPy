@@ -329,6 +329,7 @@ class BinaryTree:
 
         N_ptr = [BinaryTree.count_nodes(root, source_config) - 1]
 
+        # TODO: Switch to BinaryTree.travel_postorder instead of this recursive method
         def travel(node: Optional[NodeLike], code_lines: List[str]) -> str:
             """
             Append this node's definition to `code_lines` and return this node's variable
@@ -364,7 +365,12 @@ class BinaryTree:
 
         code_lines = []
         root_var = travel(root, code_lines)
+        # Add a comment containing the array representation (for convenience)
+        array_repr = BinaryTree.export_as_leetcode_array(root, source_config)
+        code += "\n" + _indented("# " + array_repr, indent)
+        # Add all the lines of code creating nodes
         code += "\n" + "\n".join(code_lines)
+        # Return the root node
         code += "\n" + _indented(f"return {root_var}", indent)
 
         return code
