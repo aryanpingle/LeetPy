@@ -285,7 +285,7 @@ class BinaryTree:
         return "[" + ",".join(arr) + "]"
 
     @staticmethod
-    def export_as_function(
+    def export_as_code(
         root: Optional[NodeLike],
         source_config: NodeConfig = TreeNodeConfig,
         target_config: NodeConfig = TreeNodeConfig,
@@ -311,7 +311,9 @@ class BinaryTree:
                 corresponding attribute names in `root`. This is only needed if `root` is
                 not an instance of `TreeNode`.
         """
-        code__return_type = f" -> Optional[{node_alias}]" if type_hints else ""
+        code__return_type = ""
+        if type_hints:
+            code__return_type = " -> " + ("None" if root is None else node_alias)
         code = f"def {function_name}(){code__return_type}:"
 
         if root is None:
