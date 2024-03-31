@@ -1,7 +1,7 @@
 from collections import deque
 import json
 import random
-from typing import Deque, Iterator, List, Optional, Set, TypedDict, TypeVar
+from typing import Deque, Iterator, List, Optional, Set, TypedDict, TypeVar, Type
 from rich import print as rich_print
 
 from ._reingold_tilford_algorithm import TR_create_drawing, TR_Node
@@ -19,6 +19,17 @@ unique attributes: for its data, for its left child and for its right child.
 """
 
 
+class NodeConfig(TypedDict):
+    """
+    A 1:1 mapping of the three attributes of a binary tree node to the corresponding
+    attribute names in a custom node object.
+    """
+
+    data_attr: str
+    left_attr: str
+    right_attr: str
+
+
 # References:
 # https://leetcode.com/problems/binary-tree-inorder-traversal/
 class TreeNode:
@@ -33,17 +44,6 @@ class TreeNode:
         self.val = val
         self.left = left
         self.right = right
-
-
-class NodeConfig(TypedDict):
-    """
-    A 1:1 mapping of the three attributes of a binary tree node to the corresponding
-    attribute names in a custom node object.
-    """
-
-    data_attr: str
-    left_attr: str
-    right_attr: str
 
 
 TreeNodeConfig: NodeConfig = {
@@ -68,7 +68,7 @@ class BinaryTree:
 
     @staticmethod
     def count_leaf_nodes(
-        root: Optional[TreeNode], config: NodeConfig = TreeNodeConfig
+        root: Optional[NodeLike], config: NodeConfig = TreeNodeConfig
     ) -> int:
         """Returns the number of leaf nodes in the given binary tree."""
 
@@ -90,6 +90,7 @@ class BinaryTree:
                 count[0] += 1
 
         _count_leaf_nodes(root)
+
         return count[0]
 
     @staticmethod
@@ -120,7 +121,9 @@ class BinaryTree:
         index_as_val: bool = False,
         make_complete: bool = False,
         make_bst: bool = False,
-    ) -> Optional[TreeNode]:
+        klass: Type[NodeLike] = TreeNode,
+        config: NodeConfig = TreeNodeConfig,
+    ) -> Optional[NodeLike]:
         """
         Create a rooted binary tree based on the parameters.
 
@@ -141,13 +144,13 @@ class BinaryTree:
         if n <= 0:
             return None
 
-        root = TreeNode(random.randint(min_val, max_val))
+        root = klass(random.randint(min_val, max_val))
 
         if index_as_val:
-            root.val = 0
+            setattr(root, config["data_attr"], 0)
 
         created_count = 1
-        q: Deque[TreeNode] = deque([root])
+        q: Deque[klass] = deque([root])
         while q and created_count < n:
             if make_complete:
                 pass
@@ -158,7 +161,7 @@ class BinaryTree:
             curr = q.popleft()
 
             # Create the new node
-            new_node = TreeNode(
+            new_node = klass(
                 created_count if index_as_val else random.randint(min_val, max_val)
             )
 
@@ -167,37 +170,47 @@ class BinaryTree:
             if make_complete:  # override random child if 'make_complete' is enabled
                 child = 0
             if child == 0:  # left first
-                if not (curr.left):
-                    curr.left = new_node
+                if getattr(curr, config["left_attr"]) is None:
+                    setattr(curr, config["left_attr"], new_node)
                 else:
-                    curr.right = new_node
+                    setattr(curr, config["right_attr"], new_node)
             else:  # right first
-                if not (curr.right):
-                    curr.right = new_node
+                if getattr(curr, config["right_attr"]) is None:
+                    setattr(curr, config["right_attr"], new_node)
                 else:
-                    curr.left = new_node
+                    setattr(curr, config["left_attr"], new_node)
 
             # Add the newly created node to the queue
             q.append(new_node)
             created_count += 1
 
             # If the parent isn't fully filled, add it to the queue
-            if not (curr.left and curr.right):
+            if (
+                getattr(curr, config["left_attr"]) is None
+                or getattr(curr, config["left_attr"]) is None
+            ):
                 # appendleft only matters when 'make_complete' is enabled
                 q.appendleft(curr)
 
         if make_bst:
-            arr = [i.val for i in BinaryTree.travel_inorder(root)]
+            arr = [
+                getattr(node, config["data_attr"])
+                for node in BinaryTree.travel_inorder(root)
+            ]
             arr.sort()
             i = 0
             for node in BinaryTree.travel_inorder(root):
-                node.val = arr[i]
+                setattr(node, config["data_attr"], arr[i])
                 i += 1
 
         return root
 
     @staticmethod
-    def create_from_leetcode_array(leetcode_str: str) -> Optional[TreeNode]:
+    def create_from_leetcode_array(
+        leetcode_str: str,
+        klass: Type[NodeLike] = TreeNode,
+        config: NodeConfig = TreeNodeConfig,
+    ) -> Optional[NodeLike]:
         """
         Create a rooted binary tree from a string in Leetcode's testcase format.
 
@@ -214,19 +227,20 @@ class BinaryTree:
         if len(leetcode_arr) == 0:
             return None
 
-        root = TreeNode(leetcode_arr[0])
+        root = klass(leetcode_arr[0])
         q = deque([root])
         is_left = True
         for val in leetcode_arr[1:]:
             node = None
             if val is not None:
-                node = TreeNode(val)
+                node = klass(val)
 
             if is_left:
-                q[0].left = node
+                setattr(q[0], config["left_attr"], node)
             else:
-                q[0].right = node
-            if node:
+                setattr(q[0], config["right_attr"], node)
+
+            if node is not None:
                 q.append(node)
 
             if not is_left:
@@ -272,7 +286,7 @@ class BinaryTree:
 
     @staticmethod
     def export_as_function(
-        root: Optional[TreeNode],
+        root: Optional[NodeLike],
         source_config: NodeConfig = TreeNodeConfig,
         target_config: NodeConfig = TreeNodeConfig,
         indent: int = 4,
@@ -331,13 +345,18 @@ class BinaryTree:
             code_lines.append(_indented(f"{node_var} = {get_node_repr(node)}", indent))
             # Define children
             if left_var != "None":
-                code_lines.append(_indented(
-                    f"{node_var}.{target_config['left_attr']} = {left_var}", indent
-                ))
+                code_lines.append(
+                    _indented(
+                        f"{node_var}.{target_config['left_attr']} = {left_var}", indent
+                    )
+                )
             if right_var != "None":
-                code_lines.append(_indented(
-                    f"{node_var}.{target_config['right_attr']} = {right_var}", indent
-                ))
+                code_lines.append(
+                    _indented(
+                        f"{node_var}.{target_config['right_attr']} = {right_var}",
+                        indent,
+                    )
+                )
 
             return node_var
 
@@ -437,7 +456,7 @@ class BinaryTree:
         return False
 
     @staticmethod
-    def print_structure(root: Optional[TreeNode], config: NodeConfig = TreeNodeConfig):
+    def print_structure(root: Optional[NodeLike], config: NodeConfig = TreeNodeConfig):
         """
         Print the shape of the given rooted binary tree to the terminal.
 
