@@ -293,6 +293,7 @@ class BinaryTree:
         function_name: str = "get_root",
         node_alias: str = "TreeNode",
         type_hints: bool = True,
+        inline_args: bool = False,
     ) -> str:
         """
         Generate code for a Python3 function that returns the root of the given binary
@@ -300,6 +301,12 @@ class BinaryTree:
 
         Args:
             root: The root node of a binary tree.
+            source_config: A dictionary that maps the three attributes of `TreeNode` to
+                the corresponding attribute names in `root`. This is only needed if `root`
+                is not an instance of `TreeNode`.
+            target_config: A dictionary that maps the three attributes of `TreeNode` to
+                the corresponding attribute names in the exported code. By default,
+                TreeNode's definition of a binary tree node will be used.
             indent: The number of spaces to be used while indenting the function body.
             function_name: The name of the function in the generated code. (default =
                 "get_root")
@@ -307,9 +314,10 @@ class BinaryTree:
                 (default = "TreeNode")
             type_hints: When enabled, the function code will have a Python3 return type
                 declaration for the given node_alias. (example: `-> Optional[TreeNode]`)
-            config: A dictionary that maps the three attributes of `TreeNode` to the
-                corresponding attribute names in `root`. This is only needed if `root` is
-                not an instance of `TreeNode`.
+            inline_args: When enabled, the children of any node will be directly passed to
+                its constructor. Enable this only if your node class's constructor accepts
+                the data, left child and right child in order. When disabled, children
+                will be set using the dot notation (`obj.attribute`).
         """
         code__return_type = ""
         if type_hints:
@@ -321,11 +329,18 @@ class BinaryTree:
             code += "\n" + _indented("return None", indent)
             return code
 
-        def get_node_repr(node: Optional[NodeLike]) -> str:
+        def get_node_repr(
+            node: Optional[NodeLike],
+            left: str = "None",
+            right: str = "None",
+        ) -> str:
             if node is None:
                 return "None"
             data = getattr(node, source_config["data_attr"])
-            return f"{node_alias}({data})"
+            if left == "None" and right == "None":
+                return f"{node_alias}({data})"
+            else:
+                return f"{node_alias}({data}, {left}, {right})"
 
         N_ptr = [BinaryTree.count_nodes(root, source_config) - 1]
 
@@ -344,21 +359,31 @@ class BinaryTree:
             node_var = f"node_{N_ptr[0]}"
             N_ptr[0] -= 1
 
-            # Define this node
-            code_lines.append(_indented(f"{node_var} = {get_node_repr(node)}", indent))
-            # Define children
-            if left_var != "None":
+            if not inline_args:
+                # Define this node
                 code_lines.append(
-                    _indented(
-                        f"{node_var}.{target_config['left_attr']} = {left_var}", indent
-                    )
+                    _indented(f"{node_var} = {get_node_repr(node)}", indent)
                 )
-            if right_var != "None":
-                code_lines.append(
-                    _indented(
-                        f"{node_var}.{target_config['right_attr']} = {right_var}",
-                        indent,
+                # Define children
+                if left_var != "None":
+                    code_lines.append(
+                        _indented(
+                            f"{node_var}.{target_config['left_attr']} = {left_var}",
+                            indent,
+                        )
                     )
+                if right_var != "None":
+                    code_lines.append(
+                        _indented(
+                            f"{node_var}.{target_config['right_attr']} = {right_var}",
+                            indent,
+                        )
+                    )
+            else:
+                # Define this node
+                node_repr = get_node_repr(node, left_var, right_var)
+                code_lines.append(
+                    _indented(f"{node_var} = {node_repr}", indent)
                 )
 
             return node_var
