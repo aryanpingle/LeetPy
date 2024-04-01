@@ -10,7 +10,7 @@ with open("README.md", "r") as f:
 with open("version.txt", "r") as f:
     version = f.read()
 
-version = "0.2.0"
+version = "0.2.1"
 
 # Validate the version name
 try:
