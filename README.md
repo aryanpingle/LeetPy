@@ -27,37 +27,45 @@ pip install git+https://github.com/aryanpingle/leetpy
 
 ## Usage & Examples
 
-Consider debugging the Binary Tree data structure:
+Here's a minimal use-case:
 
 ```python
+# Create a random binary tree and visualize it
+
 from leetpy import BinaryTree
 
-# from leetpy import TreeNode
-class TreeNode:
-    """A basic definition of a binary tree's node."""
-
-    def __init__(
-        self,
-        val: any = 0,
-        left: Optional["TreeNode"] = None,
-        right: Optional["TreeNode"] = None,
-    ):
-        self.val = val
-        self.left = left
-        self.right = right
-
-# Randomly generate the root of a binary tree
-root: TreeNode = BinaryTree.create(n=20, min_val=1, max_val=10)
-# Or, import it from a serialized array (like on Leetcode)
-root: TreeNode = BinaryTree.create_from_leetcode_array("[1,2,3,4,null,null,5]")
-
-# Count the number of nodes in the binary tree
-print(BinaryTree.count_nodes(root))
-# Print all the nodes of the binary tree
-for node in BinaryTree.travel_inorder(root):
-    print(node)
-# Visualize the structure of the binary tree
-BinaryTree.print_structure(root)
+root = BinaryTree.create(n=20)  # create a random binary tree with 20 nodes
+BinaryTree.print_structure(root)  # visualize the binary tree
 ```
 
-**`LeetPy`** offers a wide range of utility functions - for a wide range of data structures.
+And here's a complex one:
+
+```python
+# Suppose you want to 'save' 10 binary search trees (example: for testing purposes)
+# You would need some Python code that generates each tree exactly
+
+from leetpy import BinaryTree
+
+for i in range(1, 11):
+    # Generate a random binary search tree (BST) with 20 nodes
+    # Each node should have a value between 1 and 10 (inclusive)
+    root = BinaryTree.create(n=20, min_val=1, max_val=10, make_bst=True)
+    
+    # Get the python code that generates this exact BST
+    # Oh, and make each node an object of class "CustomNode"
+    # Oh, and keep indentation to 2 spaces
+    code += "\n" + BinaryTree.export_as_code(root, node_alias="CustomNode", indent=2)
+
+with open("testing.py", "w") as f:
+    f.write(code)
+```
+
+**`LeetPy`** offers a wide range of utility functions - for a wide range of data structures. Here's a comprehensive list of examples:
+
+|Example|Description|
+|---|---|
+|[Binary Tree Example 1](./examples/binary_tree/example_1.py)|Create a randomized binary tree with 20 nodes and visualize it.|
+|[Binary Tree Example 2](./examples/binary_tree/example_2.py)|Generate a file which contains code for creating randomized binary trees with some constraints (without dependending on the leetpy package).|
+|[Binary Tree Example 3](./examples/binary_tree/example_3.py)|Same as example 2, but with inlined generated code (reducing the number of generated lines).|
+|[Linked List Example 1](./examples/linked_list/example_1.py)|Create a randomized singly linked list with 20 nodes and visualize it.|
+|[Linked List Example 2](./examples/linked_list/example_2.py)|Create a randomized AND CYCLIC singly linked list with 20 UNIQUE nodes and visualize it.|
