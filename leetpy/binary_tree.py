@@ -187,7 +187,7 @@ class BinaryTree:
             # If the parent isn't fully filled, add it to the queue
             if (
                 getattr(curr, config["left_attr"]) is None
-                or getattr(curr, config["left_attr"]) is None
+                or getattr(curr, config["right_attr"]) is None
             ):
                 # appendleft only matters when 'make_complete' is enabled
                 q.appendleft(curr)
