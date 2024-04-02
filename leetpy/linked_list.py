@@ -17,6 +17,10 @@ class ListNode:
         self.next = next
 
 
+def _indented(s: str, spaces: int):
+    return " " * spaces + s
+
+
 class LinkedList:
     """
     Algorithms and utility functions related to the Singly Linked List data structure. All
@@ -91,7 +95,7 @@ class LinkedList:
         return sentinel.next
 
     @staticmethod
-    def export_as_function(
+    def export_as_code(
         head: Optional[ListNode],
         indent: int = 4,
         function_name: str = "get_head",
@@ -113,11 +117,15 @@ class LinkedList:
                 declaration for the given node_alias. (example: `-> Optional[ListNode]`)
         """
 
-        code__return_type = f" -> Optional[{node_alias}]" if type_hints else ""
-        code__func_signature = f"def {function_name}(){code__return_type}:"
+        code__return_type = ""
+        if type_hints:
+            code__return_type = " -> " + ("None" if head is None else node_alias)
+        code = f"def {function_name}(){code__return_type}:"
 
         if head is None:
-            return "\n".join([code__func_signature, " " * indent + "return None"])
+            # (in code) return None
+            code += "\n" + _indented("return None", indent)
+            return code
 
         def get_node_repr(node: Optional[ListNode]) -> str:
             if node is None:
@@ -126,35 +134,30 @@ class LinkedList:
 
         N = LinkedList.count_nodes(head)
 
-        code__func_body = []
-
         # Create the first node (index 0)
-        code__func_body.append(f"node_0 = {get_node_repr(head)}")
+        code += "\n" + _indented(f"node_0 = {get_node_repr(head)}", indent)
 
         node_to_index = {head: 0}
         for i in range(1, N):
             head = head.next
             # Create the new node
-            code__func_body.append(f"node_{i} = {get_node_repr(head)}")
+            code += "\n" + _indented(f"node_{i} = {get_node_repr(head)}", indent)
             node_to_index[head] = i
             # Justify its existence
-            code__func_body.append(f"node_{i-1}.next = node_{i}")
+            code += "\n" + _indented(f"node_{i-1}.next = node_{i}", indent)
 
         # head is now the last node
 
         # Create the cyclic reference, if any
         if LinkedList.is_cyclic(head):
-            code__func_body.append(f"# cyclic dependency")
-            code__func_body.append(f"node_{N-1}.next = node_{node_to_index[head.next]}")
+            code += "\n" + _indented(f"# cyclic dependency", indent)
+            code += "\n" + _indented(
+                f"node_{N-1}.next = node_{node_to_index[head.next]}", indent
+            )
 
-        code__func_body.append("return node_0")  # Return statement
+        code += "\n" + _indented("return node_0", indent)  # Return statement
 
-        return "\n".join(
-            [
-                code__func_signature,
-                *[" " * indent + line for line in code__func_body],
-            ]
-        )
+        return code
 
     @staticmethod
     def get(head: Optional[ListNode], n: int) -> Optional[ListNode]:
