@@ -227,6 +227,23 @@ class LinkedList:
         print()
 
     @staticmethod
+    def reverse(head: Optional[ListNode]) -> Optional[ListNode]:
+        """Reverse the given linked list and return the new head."""
+
+        assert not LinkedList.is_cyclic(head)
+
+        prev = None
+        current = head
+        while current is not None:
+            next = current.next
+            current.next = prev
+            prev = current
+            current = next
+        head = prev
+
+        return head
+
+    @staticmethod
     def search(head: Optional[ListNode], value: any) -> Optional[ListNode]:
         """
         Search for a node that contains the given value, and return the first match if
