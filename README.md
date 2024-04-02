@@ -60,12 +60,4 @@ with open("testing.py", "w") as f:
     f.write(code)
 ```
 
-**`LeetPy`** offers a wide range of utility functions - for a wide range of data structures. Here's a comprehensive list of examples:
-
-|Example|Description|
-|---|---|
-|[Binary Tree Example 1](./examples/binary_tree/example_1.py)|Create a randomized binary tree with 20 nodes and visualize it.|
-|[Binary Tree Example 2](./examples/binary_tree/example_2.py)|Generate a file which contains code for creating randomized binary trees with some constraints (without dependending on the leetpy package).|
-|[Binary Tree Example 3](./examples/binary_tree/example_3.py)|Same as example 2, but with inlined generated code (reducing the number of generated lines).|
-|[Linked List Example 1](./examples/linked_list/example_1.py)|Create a randomized singly linked list with 20 nodes and visualize it.|
-|[Linked List Example 2](./examples/linked_list/example_2.py)|Create a randomized AND CYCLIC singly linked list with 20 UNIQUE nodes and visualize it.|
+**`LeetPy`** offers a wide range of utility functions - for a wide range of data structures. For a comprehensive list of usage examples, check out [/examples/README.md](./examples/README.md).
