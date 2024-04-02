@@ -202,7 +202,8 @@ def TR_create_drawing(
     minimum_separation: int = 3,
 ) -> Optional[TR_Node]:
     """
-    Create a deep copy of the given tree root with coordinates for each node on a 2-D plane.
+    Create a deep copy of the given tree root with coordinates for each node on a 2-D
+    plane.
     """
 
     TR_root = _TR_create_tree_copy(root, data_attr, left_attr, right_attr)
