@@ -251,6 +251,36 @@ class BinaryTree:
         return root
 
     @staticmethod
+    def equals(root1: Optional[NodeLike], root2: Optional[NodeLike], config1: NodeConfig = TreeNodeConfig, config2: NodeConfig = TreeNodeConfig) -> bool:
+        """
+        Check if the binary trees formed by two root nodes are equal in structure and
+        data.
+
+        Args:
+            root1: The root node of the first binary tree.
+            root2: The root node of the second binary tree.
+            config1: A dictionary that maps the three attributes of `TreeNode` to the
+                corresponding attribute names in `root1`. This is only needed if `root1`
+                is not an instance of `TreeNode`.
+            config2: A dictionary that maps the three attributes of `TreeNode` to the
+                corresponding attribute names in `root2`. This is only needed if `root2`
+                is not an instance of `TreeNode`.
+        """
+
+        if root1 is None and root2 is None:
+            return True
+        
+        data1 = getattr(root1, config1["data_attr"])
+        data2 = getattr(root2, config2["data_attr"])
+        if data1 != data2:
+            return False
+        
+        is_left_equal = BinaryTree.equals(getattr(root1, config1["left_attr"]), getattr(root2, config2["left_attr"]), config1, config2)
+        is_right_equal = BinaryTree.equals(getattr(root1, config1["right_attr"]), getattr(root2, config2["right_attr"]), config1, config2)
+
+        return is_left_equal and is_right_equal
+
+    @staticmethod
     def export_as_leetcode_array(
         root: Optional[NodeLike], config: NodeConfig = TreeNodeConfig
     ) -> str:
