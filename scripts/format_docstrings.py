@@ -106,8 +106,8 @@ def format_docstring(docstring: str, code_indent: int) -> List[str]:
 
             section_name = matched.groups()[-1]
 
-            if section_name.lower() == "args":
-                formatted_docstring += f"\nArgs:\n"
+            if section_name.lower() == "args" or section_name.lower() == "raises":
+                formatted_docstring += f"\n{section_name}:\n"
 
                 bruh = "\n".join(matched.group(0).split("\n")[1:])
                 paras = re.split(r"\s{4}(?=\w+:)", bruh, re.MULTILINE)
