@@ -1,8 +1,9 @@
 from collections import deque
 import json
 import random
-from typing import Deque, Iterator, List, Optional, Set, TypedDict, TypeVar, Type
+import re as regex
 from rich import print as rich_print
+from typing import Deque, Iterator, List, Optional, Set, TypedDict, TypeVar, Type
 
 from ._reingold_tilford_algorithm import TR_create_drawing, TR_Node
 
@@ -17,6 +18,10 @@ NodeLike = TypeVar("NodeLike")
 A generic type for any object that represents a node in a binary tree. It will have three
 unique attributes: for its data, for its left child and for its right child.
 """
+
+SupportsWrite = TypeVar("SupportsWrite")
+"""
+A generic type for any `.write()`-supporting file-like object."""
 
 
 class NodeConfig(TypedDict):
@@ -444,6 +449,155 @@ class BinaryTree:
         return code
 
     @staticmethod
+    def save_as_svg(
+        root: Optional[TreeNode],
+        fp: SupportsWrite,
+        node_color: str = "transparent",
+        stroke_color: str = "black",
+    ):
+        """
+        Save a visualization of the given binary tree as an SVG illustration.
+
+        Args:
+            fp: A file pointer (or any `.write()`-implementing object).
+            node_color: The background color of a node as a CSS-string.
+            stroke_color: The color of edges and node outlines as a CSS-string.
+        """
+        TR_root = TR_create_drawing(root, "val", "left", "right", minimum_separation=1)
+
+        # Find the minimum and maximum x and y coordinates (grid bounds)
+        x_bounds = [0, 0]
+        y_bounds = [0, 0]
+
+        def calculate_bounds(root: TR_Node):
+            if root is None:
+                return
+            x_bounds[0] = min(x_bounds[0], root.x_coord)
+            x_bounds[1] = max(x_bounds[1], root.x_coord)
+            y_bounds[0] = min(y_bounds[0], root.y_coord)
+            y_bounds[1] = max(y_bounds[1], root.y_coord)
+
+            calculate_bounds(root.left)
+            calculate_bounds(root.right)
+
+        calculate_bounds(TR_root)
+
+        ###################################
+        #         SVG Calculations        #
+        ###################################
+
+        # TODO: Create a utility module for SVG stuff
+
+        CELL_WIDTH = 100
+        CELL_HEIGHT = 2 * CELL_WIDTH  # Terminal char height = 2*width
+
+        SVG_VIEWBOX_LEFT = CELL_WIDTH * x_bounds[0]
+        SVG_VIEWBOX_RIGHT = CELL_WIDTH * (x_bounds[1] + 1)
+        SVG_VIEWBOX_UP = 0
+        SVG_VIEWBOX_DOWN = CELL_HEIGHT * (y_bounds[1] + 1)
+
+        SVG_WIDTH = SVG_VIEWBOX_RIGHT - SVG_VIEWBOX_LEFT
+        SVG_HEIGHT = SVG_VIEWBOX_DOWN - SVG_VIEWBOX_UP
+
+        NODE_RADIUS = min(CELL_WIDTH, CELL_HEIGHT) // 3
+        EDGE_STROKE_WIDTH = (2 * NODE_RADIUS) * 0.05
+        FONT_HEIGHT = NODE_RADIUS
+        CHAR_WIDTH = FONT_HEIGHT / 2
+
+        node_g = []  # A list of all SVGs that represent a node
+        node_mask_g = []  # Copies of node_g used for masking
+        text_g = []  # A list of all SVGs that represent a node's data
+        edge_g = []  # A list of all SVGs that represent an edge
+
+        def get_centered_text_svg(text: str, cx: int, cy: int) -> str:
+            baseline_x = cx - (CHAR_WIDTH) * (len(text) / 2)
+            baseline_y = cy + (FONT_HEIGHT / 2) * 0.8
+            return f"""
+            <text x="{baseline_x}" y="{baseline_y}" style="font-family: monospace;"
+            font-size="{FONT_HEIGHT}">{text}</text>
+            """
+
+        def add_node_svg(data: any, x_coord: int, y_coord: int):
+            cx = (x_coord * CELL_WIDTH) + (CELL_WIDTH / 2)
+            cy = (y_coord * CELL_HEIGHT) + (CELL_HEIGHT / 2)
+            node_g.append(
+                f"""
+                <ellipse cx="{cx}" cy="{cy}" rx="{NODE_RADIUS}" ry="{NODE_RADIUS}"
+                fill="{node_color}" stroke="{stroke_color}"
+                stroke-width="{EDGE_STROKE_WIDTH}">
+                </ellipse>
+                """
+            )
+            node_mask_g.append(
+                f"""
+                <ellipse cx="{cx}" cy="{cy}" rx="{NODE_RADIUS}" ry="{NODE_RADIUS}"
+                fill="black" stroke="black" stroke-width="{EDGE_STROKE_WIDTH}">
+                </ellipse>
+                """
+            )
+            text_g.append(get_centered_text_svg(str(data), cx, cy))
+
+        def add_edge_svg(x1: int, y1: int, x2: int, y2: int):
+            x1 = (x1 * CELL_WIDTH) + (CELL_WIDTH / 2)
+            x2 = (x2 * CELL_WIDTH) + (CELL_WIDTH / 2)
+            y1 = (y1 * CELL_HEIGHT) + (CELL_HEIGHT / 2)
+            y2 = (y2 * CELL_HEIGHT) + (CELL_HEIGHT / 2)
+            edge_g.append(
+                f"""
+                <line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="{stroke_color}"
+                stroke-width="{EDGE_STROKE_WIDTH}"></line>
+                """
+            )
+
+        def build_svg(node: TR_Node):
+            if node is None:
+                return
+
+            # Build edge svg's
+            if node.left is not None:
+                add_edge_svg(
+                    node.x_coord, node.y_coord, node.left.x_coord, node.left.y_coord
+                )
+            if node.right is not None:
+                add_edge_svg(
+                    node.x_coord, node.y_coord, node.right.x_coord, node.right.y_coord
+                )
+
+            # Build node svg
+            add_node_svg(node.val, node.x_coord, node.y_coord)
+
+            build_svg(node.left)
+            build_svg(node.right)
+
+        build_svg(TR_root)
+
+        # This is used for the node mask
+        background_rect_white = f"""
+        <rect x="{SVG_VIEWBOX_LEFT}" y="{SVG_VIEWBOX_UP}" width="{SVG_WIDTH}"
+        height="{SVG_HEIGHT}" fill="white"></rect>
+        """
+
+        code = f"""
+        <svg
+        version="1.1"
+        viewBox="{SVG_VIEWBOX_LEFT} {SVG_VIEWBOX_UP} {SVG_WIDTH} {SVG_HEIGHT}"
+        xmlns="http://www.w3.org/2000/svg">
+          <mask id="node-mask-group">
+            {background_rect_white}
+            {''.join(node_mask_g)}
+          </mask>
+          <g id="leetpy-bt-edges" mask="url(#node-mask-group)">{''.join(edge_g)}</g>
+          <g id="leetpy-bt-nodes">{''.join(node_g)}</g>
+          <g id="leetpy-bt-node-texts">{''.join(text_g)}</g>
+        </svg>
+        """
+
+        # Remove newlines and leading spaces in lines (for compression)
+        code = regex.sub(r"\s*(\n\s*)+", " ", code)
+
+        fp.write(code)
+
+    @staticmethod
     def get_depth(root: Optional[NodeLike], config: NodeConfig = TreeNodeConfig) -> int:
         """
         Returns the maximum depth/height of the given binary tree. For a single root node,
@@ -465,6 +619,43 @@ class BinaryTree:
             BinaryTree.get_depth(getattr(root, config["left_attr"]), config),
             BinaryTree.get_depth(getattr(root, config["right_attr"]), config),
         )
+
+    @staticmethod
+    def get_max_width(
+        root: Optional[NodeLike], config: NodeConfig = TreeNodeConfig
+    ) -> int:
+        """
+        The maximum number of nodes at any level of the given binary tree.
+
+        Args:
+            config: A dictionary that maps the three attributes of `TreeNode` to the
+                corresponding attribute names in `root`. This is only needed if `root` is
+                not an instance of `TreeNode`.
+        """
+
+        assert not BinaryTree.is_cyclic(
+            root, config
+        ), "Cycle detected while traveling from the root"
+
+        if root is None:
+            return 0
+
+        widths = {}
+
+        def dfs(root: Optional[NodeLike], depth: int) -> None:
+            if root is None:
+                return
+
+            if not depth in widths:
+                widths[depth] = 0
+            widths[depth] += 1
+
+            dfs(getattr(root, config["left_attr"]), depth + 1)
+            dfs(getattr(root, config["right_attr"]), depth + 1)
+
+        dfs(root, 0)
+
+        return max(widths.values())
 
     @staticmethod
     def is_binary_search_tree(
