@@ -474,7 +474,13 @@ class BinaryTree:
 
         calculate_bounds(TR_root)
 
-        CELL_WIDTH = 75
+        ###################################
+        #         SVG Calculations        #
+        ###################################
+
+        # TODO: Create a utility module for SVG stuff
+
+        CELL_WIDTH = 100
         CELL_HEIGHT = 2 * CELL_WIDTH  # Terminal char height = 2*width
 
         SVG_VIEWBOX_LEFT = CELL_WIDTH * x_bounds[0]
@@ -486,11 +492,22 @@ class BinaryTree:
         SVG_HEIGHT = SVG_VIEWBOX_DOWN - SVG_VIEWBOX_UP
 
         NODE_RADIUS = min(CELL_WIDTH, CELL_HEIGHT) // 3
-        EDGE_STROKE_WIDTH = (2 * NODE_RADIUS) / 10
+        EDGE_STROKE_WIDTH = (2 * NODE_RADIUS) * 0.05
+        FONT_HEIGHT = NODE_RADIUS
+        CHAR_WIDTH = FONT_HEIGHT / 2
 
         node_g = []  # A list of all SVGs that represent a node
         node_mask_g = []  # Copies of node_g used for masking
+        text_g = []  # A list of all SVGs that represent a node's data
         edge_g = []  # A list of all SVGs that represent an edge
+
+        def get_centered_text_svg(text: str, cx: int, cy: int) -> str:
+            baseline_x = cx - (CHAR_WIDTH) * (len(text) / 2)
+            baseline_y = cy + (FONT_HEIGHT / 2) * 0.8
+            return f"""
+            <text x="{baseline_x}" y="{baseline_y}" style="font-family: monospace;"
+            font-size="{FONT_HEIGHT}">{text}</text>
+            """
 
         def add_node_svg(data: any, x_coord: int, y_coord: int):
             cx = (x_coord * CELL_WIDTH) + (CELL_WIDTH / 2)
@@ -510,6 +527,7 @@ class BinaryTree:
                 </ellipse>
                 """
             )
+            text_g.append(get_centered_text_svg(str(data), cx, cy))
 
         def add_edge_svg(x1: int, y1: int, x2: int, y2: int):
             x1 = (x1 * CELL_WIDTH) + (CELL_WIDTH / 2)
@@ -562,6 +580,7 @@ class BinaryTree:
           </mask>
           <g id="leetpy-bt-edges" mask="url(#node-mask-group)">{''.join(edge_g)}</g>
           <g id="leetpy-bt-nodes">{''.join(node_g)}</g>
+          <g id="leetpy-bt-node-texts">{''.join(text_g)}</g>
         </svg>
         """
 
