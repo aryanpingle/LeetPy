@@ -1,8 +1,9 @@
 from collections import deque
 import json
 import random
-from typing import Deque, Iterator, List, Optional, Set, TypedDict, TypeVar, Type
+import re as regex
 from rich import print as rich_print
+from typing import Deque, Iterator, List, Optional, Set, TypedDict, TypeVar, Type
 
 from ._reingold_tilford_algorithm import TR_create_drawing, TR_Node
 
@@ -17,6 +18,10 @@ NodeLike = TypeVar("NodeLike")
 A generic type for any object that represents a node in a binary tree. It will have three
 unique attributes: for its data, for its left child and for its right child.
 """
+
+SupportsWrite = TypeVar("SupportsWrite")
+"""
+A generic type for any `.write()`-supporting file-like object."""
 
 
 class NodeConfig(TypedDict):
@@ -442,6 +447,113 @@ class BinaryTree:
         code += "\n" + _indented(f"return {root_var}", indent)
 
         return code
+
+    @staticmethod
+    def save_as_svg(root: Optional[TreeNode], fp: SupportsWrite):
+        TR_root = TR_create_drawing(root, "val", "left", "right")
+
+        # Find the minimum and maximum x and y coordinates (grid bounds)
+        x_bounds = [0, 0]
+        y_bounds = [0, 0]
+
+        def calculate_bounds(root: TR_Node):
+            if root is None:
+                return
+            x_bounds[0] = min(x_bounds[0], root.x_coord)
+            x_bounds[1] = max(x_bounds[1], root.x_coord)
+            y_bounds[0] = min(y_bounds[0], root.y_coord)
+            y_bounds[1] = max(y_bounds[1], root.y_coord)
+
+            calculate_bounds(root.left)
+            calculate_bounds(root.right)
+
+        calculate_bounds(TR_root)
+
+        CELL_WIDTH = 75
+        CELL_HEIGHT = 2 * CELL_WIDTH  # Terminal char height = 2*width
+
+        SVG_VIEWBOX_LEFT = CELL_WIDTH * x_bounds[0]
+        SVG_VIEWBOX_RIGHT = CELL_WIDTH * (x_bounds[1] + 1)
+        SVG_VIEWBOX_UP = 0
+        SVG_VIEWBOX_DOWN = CELL_HEIGHT * (y_bounds[1] + 1)
+
+        SVG_WIDTH = SVG_VIEWBOX_RIGHT - SVG_VIEWBOX_LEFT
+        SVG_HEIGHT = SVG_VIEWBOX_DOWN - SVG_VIEWBOX_UP
+
+        NODE_RADIUS = min(CELL_WIDTH, CELL_HEIGHT) // 3
+        EDGE_STROKE_WIDTH = (2 * NODE_RADIUS) / 10
+
+        node_g = []  # A list of all SVGs that represent a node
+        edge_g = []  # A list of all SVGs that represent an edge
+
+        # TODO: Create a node mask and apply it to edges
+
+        def add_node_svg(data: any, x_coord: int, y_coord: int):
+            cx = (x_coord * CELL_WIDTH) + (CELL_WIDTH / 2)
+            cy = (y_coord * CELL_HEIGHT) + (CELL_HEIGHT / 2)
+            node_g.append(
+                f"""
+                <ellipse cx="{cx}" cy="{cy}" rx="{NODE_RADIUS}" ry="{NODE_RADIUS}"
+                fill="white" stroke="black" stroke-width="{EDGE_STROKE_WIDTH}">
+                </ellipse>
+                """
+            )
+
+        def add_edge_svg(x1: int, y1: int, x2: int, y2: int):
+            x1 = (x1 * CELL_WIDTH) + (CELL_WIDTH / 2)
+            x2 = (x2 * CELL_WIDTH) + (CELL_WIDTH / 2)
+            y1 = (y1 * CELL_HEIGHT) + (CELL_HEIGHT / 2)
+            y2 = (y2 * CELL_HEIGHT) + (CELL_HEIGHT / 2)
+            edge_g.append(
+                f"""
+                <line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="black"
+                stroke-width="{EDGE_STROKE_WIDTH}"></line>
+                """
+            )
+
+        def build_svg(node: TR_Node):
+            if node is None:
+                return
+
+            # Build edge svg's
+            if node.left is not None:
+                add_edge_svg(
+                    node.x_coord, node.y_coord, node.left.x_coord, node.left.y_coord
+                )
+            if node.right is not None:
+                add_edge_svg(
+                    node.x_coord, node.y_coord, node.right.x_coord, node.right.y_coord
+                )
+
+            # Build node svg
+            add_node_svg(node.val, node.x_coord, node.y_coord)
+
+            build_svg(node.left)
+            build_svg(node.right)
+
+        build_svg(TR_root)
+
+        # TODO: Remove this if you decide that the background should always be transparent
+        background_rect = f"""
+        <rect x="{SVG_VIEWBOX_LEFT}" y="{SVG_VIEWBOX_UP}" width="{SVG_WIDTH}"
+        height="{SVG_HEIGHT}" fill="transparent"></rect>
+        """
+
+        code = f"""
+        <svg
+        version="1.1"
+        viewBox="{SVG_VIEWBOX_LEFT} {SVG_VIEWBOX_UP} {SVG_WIDTH} {SVG_HEIGHT}"
+        xmlns="http://www.w3.org/2000/svg">
+          {background_rect}
+          <g id="leetpy-bt-edges">{''.join(edge_g)}</g>
+          <g id="leetpy-bt-nodes">{''.join(node_g)}</g>
+        </svg>
+        """
+
+        # Remove newlines and leading spaces in lines (for compression)
+        code = regex.sub(r"\s*(\n\s*)+", " ", code)
+
+        fp.write(code)
 
     @staticmethod
     def get_depth(root: Optional[NodeLike], config: NodeConfig = TreeNodeConfig) -> int:
