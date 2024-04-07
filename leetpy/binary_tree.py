@@ -545,12 +545,6 @@ class BinaryTree:
 
         build_svg(TR_root)
 
-        # TODO: Remove this if you decide that the background should always be transparent
-        background_rect = f"""
-        <rect x="{SVG_VIEWBOX_LEFT}" y="{SVG_VIEWBOX_UP}" width="{SVG_WIDTH}"
-        height="{SVG_HEIGHT}" fill="transparent"></rect>
-        """
-
         # This is used for the node mask
         background_rect_white = f"""
         <rect x="{SVG_VIEWBOX_LEFT}" y="{SVG_VIEWBOX_UP}" width="{SVG_WIDTH}"
@@ -562,7 +556,6 @@ class BinaryTree:
         version="1.1"
         viewBox="{SVG_VIEWBOX_LEFT} {SVG_VIEWBOX_UP} {SVG_WIDTH} {SVG_HEIGHT}"
         xmlns="http://www.w3.org/2000/svg">
-          {background_rect}
           <mask id="node-mask-group">
             {background_rect_white}
             {''.join(node_mask_g)}
