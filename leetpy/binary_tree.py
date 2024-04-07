@@ -251,7 +251,12 @@ class BinaryTree:
         return root
 
     @staticmethod
-    def equals(root1: Optional[NodeLike], root2: Optional[NodeLike], config1: NodeConfig = TreeNodeConfig, config2: NodeConfig = TreeNodeConfig) -> bool:
+    def equals(
+        root1: Optional[NodeLike],
+        root2: Optional[NodeLike],
+        config1: NodeConfig = TreeNodeConfig,
+        config2: NodeConfig = TreeNodeConfig,
+    ) -> bool:
         """
         Check if the binary trees formed by two root nodes are equal in structure and
         data.
@@ -269,14 +274,24 @@ class BinaryTree:
 
         if root1 is None and root2 is None:
             return True
-        
+
         data1 = getattr(root1, config1["data_attr"])
         data2 = getattr(root2, config2["data_attr"])
         if data1 != data2:
             return False
-        
-        is_left_equal = BinaryTree.equals(getattr(root1, config1["left_attr"]), getattr(root2, config2["left_attr"]), config1, config2)
-        is_right_equal = BinaryTree.equals(getattr(root1, config1["right_attr"]), getattr(root2, config2["right_attr"]), config1, config2)
+
+        is_left_equal = BinaryTree.equals(
+            getattr(root1, config1["left_attr"]),
+            getattr(root2, config2["left_attr"]),
+            config1,
+            config2,
+        )
+        is_right_equal = BinaryTree.equals(
+            getattr(root1, config1["right_attr"]),
+            getattr(root2, config2["right_attr"]),
+            config1,
+            config2,
+        )
 
         return is_left_equal and is_right_equal
 
@@ -412,9 +427,7 @@ class BinaryTree:
             else:
                 # Define this node
                 node_repr = get_node_repr(node, left_var, right_var)
-                code_lines.append(
-                    _indented(f"{node_var} = {node_repr}", indent)
-                )
+                code_lines.append(_indented(f"{node_var} = {node_repr}", indent))
 
             return node_var
 
