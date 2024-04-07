@@ -455,6 +455,14 @@ class BinaryTree:
         node_color: str = "transparent",
         stroke_color: str = "black",
     ):
+        """
+        Save a visualization of the given binary tree as an SVG illustration.
+
+        Args:
+            fp: A file pointer (or any `.write()`-implementing object).
+            node_color: The background color of a node as a CSS-string.
+            stroke_color: The color of edges and node outlines as a CSS-string.
+        """
         TR_root = TR_create_drawing(root, "val", "left", "right", minimum_separation=1)
 
         # Find the minimum and maximum x and y coordinates (grid bounds)
