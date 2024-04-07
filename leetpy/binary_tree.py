@@ -449,8 +449,13 @@ class BinaryTree:
         return code
 
     @staticmethod
-    def save_as_svg(root: Optional[TreeNode], fp: SupportsWrite):
-        TR_root = TR_create_drawing(root, "val", "left", "right")
+    def save_as_svg(
+        root: Optional[TreeNode],
+        fp: SupportsWrite,
+        node_color: str = "transparent",
+        stroke_color: str = "black",
+    ):
+        TR_root = TR_create_drawing(root, "val", "left", "right", minimum_separation=1)
 
         # Find the minimum and maximum x and y coordinates (grid bounds)
         x_bounds = [0, 0]
@@ -484,9 +489,8 @@ class BinaryTree:
         EDGE_STROKE_WIDTH = (2 * NODE_RADIUS) / 10
 
         node_g = []  # A list of all SVGs that represent a node
+        node_mask_g = []  # Copies of node_g used for masking
         edge_g = []  # A list of all SVGs that represent an edge
-
-        # TODO: Create a node mask and apply it to edges
 
         def add_node_svg(data: any, x_coord: int, y_coord: int):
             cx = (x_coord * CELL_WIDTH) + (CELL_WIDTH / 2)
@@ -494,7 +498,15 @@ class BinaryTree:
             node_g.append(
                 f"""
                 <ellipse cx="{cx}" cy="{cy}" rx="{NODE_RADIUS}" ry="{NODE_RADIUS}"
-                fill="white" stroke="black" stroke-width="{EDGE_STROKE_WIDTH}">
+                fill="{node_color}" stroke="{stroke_color}"
+                stroke-width="{EDGE_STROKE_WIDTH}">
+                </ellipse>
+                """
+            )
+            node_mask_g.append(
+                f"""
+                <ellipse cx="{cx}" cy="{cy}" rx="{NODE_RADIUS}" ry="{NODE_RADIUS}"
+                fill="black" stroke="black" stroke-width="{EDGE_STROKE_WIDTH}">
                 </ellipse>
                 """
             )
@@ -506,7 +518,7 @@ class BinaryTree:
             y2 = (y2 * CELL_HEIGHT) + (CELL_HEIGHT / 2)
             edge_g.append(
                 f"""
-                <line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="black"
+                <line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="{stroke_color}"
                 stroke-width="{EDGE_STROKE_WIDTH}"></line>
                 """
             )
@@ -539,13 +551,23 @@ class BinaryTree:
         height="{SVG_HEIGHT}" fill="transparent"></rect>
         """
 
+        # This is used for the node mask
+        background_rect_white = f"""
+        <rect x="{SVG_VIEWBOX_LEFT}" y="{SVG_VIEWBOX_UP}" width="{SVG_WIDTH}"
+        height="{SVG_HEIGHT}" fill="white"></rect>
+        """
+
         code = f"""
         <svg
         version="1.1"
         viewBox="{SVG_VIEWBOX_LEFT} {SVG_VIEWBOX_UP} {SVG_WIDTH} {SVG_HEIGHT}"
         xmlns="http://www.w3.org/2000/svg">
           {background_rect}
-          <g id="leetpy-bt-edges">{''.join(edge_g)}</g>
+          <mask id="node-mask-group">
+            {background_rect_white}
+            {''.join(node_mask_g)}
+          </mask>
+          <g id="leetpy-bt-edges" mask="url(#node-mask-group)">{''.join(edge_g)}</g>
           <g id="leetpy-bt-nodes">{''.join(node_g)}</g>
         </svg>
         """
