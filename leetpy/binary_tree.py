@@ -613,6 +613,43 @@ class BinaryTree:
         )
 
     @staticmethod
+    def get_max_width(
+        root: Optional[NodeLike], config: NodeConfig = TreeNodeConfig
+    ) -> int:
+        """
+        The maximum number of nodes at any level of the given binary tree.
+
+        Args:
+            config: A dictionary that maps the three attributes of `TreeNode` to the
+                corresponding attribute names in `root`. This is only needed if `root` is
+                not an instance of `TreeNode`.
+        """
+
+        assert not BinaryTree.is_cyclic(
+            root, config
+        ), "Cycle detected while traveling from the root"
+
+        if root is None:
+            return 0
+
+        widths = {}
+
+        def dfs(root: Optional[NodeLike], depth: int) -> None:
+            if root is None:
+                return
+
+            if not depth in widths:
+                widths[depth] = 0
+            widths[depth] += 1
+
+            dfs(getattr(root, config["left_attr"]), depth + 1)
+            dfs(getattr(root, config["right_attr"]), depth + 1)
+
+        dfs(root, 0)
+
+        return max(widths.values())
+
+    @staticmethod
     def is_binary_search_tree(
         root: Optional[NodeLike], config: NodeConfig = TreeNodeConfig
     ) -> bool:
