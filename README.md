@@ -61,3 +61,22 @@ with open("testing.py", "w") as f:
 ```
 
 **`LeetPy`** offers a wide range of utility functions - for a wide range of data structures. For a comprehensive list of usage examples, check out [/examples/README.md](./examples/README.md).
+
+## Development
+
+**`LeetPy`** has plans to support the following data structures:
+
+- [X] 1-D Arrays
+- [X] 2-D Arrays
+- [X] Binary Trees
+- [X] Singly Linked Lists
+- [ ] Doubly Linked Lists
+- [ ] Undirected Graphs (Weighted + Unweighted)
+- [ ] Directed Graphs (Weighted + Unweighted)
+
+All data structures have some common API's:
+
+- `create() -> structure` - To create the structure with random data and properties based on certain parameters
+- `export_as_code(structure) -> str` - To get an independent Python3 function that when called, returns the given data structure
+- `export_as_svg(structure) -> None` - To create an SVG file with a visualization of the given data structure
+- `print(structure) -> None` - To print a representation of the data structure to the terminal
